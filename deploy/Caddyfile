@@ -1,0 +1,13 @@
+# Public entry point: HTTPS with an automatic Let's Encrypt certificate for $DOMAIN,
+# HTTP redirected to HTTPS, then everything forwarded to the nginx front end.
+{$DOMAIN} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+	request_body {
+		max_size 64KB
+	}
+	reverse_proxy web:8080
+}

@@ -1,0 +1,180 @@
+/* Activity as a bank statement: printed header, statement toolbar, month sections
+   bracketed by brought/carried forward lines, and a transaction voucher slip.
+   Shared primitives (.pb-sheet, .pb-field, .pb-table, .pb-flag, .pb-stamp, .pb-words)
+   live in src/passbook.css. */
+
+.act-page { max-width: 1000px; display: grid; gap: 22px; }
+.act-statement { padding: 22px 24px 20px; }
+
+/* ------------------------------------------------ statement header */
+.act-st-head {
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;
+  padding-bottom: 12px; border-bottom: 2px solid var(--ink); box-shadow: 0 3px 0 -2px var(--ink);
+}
+.act-st-head h2 { font-family: var(--display); font-weight: 540; font-size: 26px; letter-spacing: -0.01em; margin-top: 4px; }
+.act-st-closing { display: grid; justify-items: end; gap: 2px; }
+.act-st-closing b { font-family: var(--display); font-size: 24px; font-weight: 560; letter-spacing: -0.015em; font-variant-numeric: tabular-nums lining-nums; }
+
+.act-st-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; margin-top: 6px; }
+.act-st-fields .wide { grid-column: 1 / -1; }
+.act-st-fields .pb-field b { overflow-wrap: anywhere; }
+.act-st-fields .pb-field b.mono { font-size: 14px; letter-spacing: .02em; }
+.act-holder { font-family: var(--display); font-weight: 520 !important; font-size: 22px !important; letter-spacing: -0.01em; }
+
+/* ------------------------------------------------ toolbar */
+.act-toolbar {
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+  margin: 18px 0 0; padding: 10px 12px; background: var(--surface-2);
+  border: 1px solid var(--rule-2); border-radius: var(--r);
+}
+.act-seg { display: inline-flex; padding: 3px; gap: 2px; background: var(--surface); border: 1px solid var(--rule-2); border-radius: var(--r-sm); }
+.act-seg button {
+  height: 34px; padding: 0 16px; border: 0; border-radius: 4px; background: none;
+  font: 600 11.5px var(--font); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); cursor: pointer;
+}
+.act-seg button:hover { background: var(--surface-2); color: var(--ink); }
+.act-seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.act-seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.act-search { flex: 1; min-width: 220px; position: relative; display: block; }
+.act-search .input { width: 100%; height: 42px; padding-left: 38px; padding-right: 12px; background: var(--surface); }
+.act-search-ico { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+
+.act-notice { margin: 10px 0 0; font-size: 13px; color: var(--ink-2); padding-left: 10px; border-left: 2px solid var(--accent); }
+
+/* ------------------------------------------------ ledger */
+.act-table-wrap { overflow-x: auto; margin: 16px -24px 0; }
+.act-table { min-width: 640px; }
+.act-table th:first-child, .act-table td:first-child { padding-left: 20px; width: 92px; box-sizing: border-box; }
+.act-table th:last-child, .act-table td:last-child { padding-right: 20px; }
+
+.act-month th {
+  padding: 18px 20px 6px !important; background: var(--surface); border-bottom: 1px solid var(--ink-2);
+  font: 540 18px/1.2 var(--display) !important; letter-spacing: -0.005em !important; text-transform: none !important; color: var(--ink) !important;
+}
+.act-pending .act-month th { color: var(--warn) !important; border-bottom-color: var(--warn); }
+tbody:first-of-type .act-month th { padding-top: 12px !important; }
+
+.act-bf td, .act-cf td { font-size: 13.5px; color: var(--ink-2); background: color-mix(in srgb, var(--surface-2) 55%, transparent); }
+.act-bf td:nth-child(2), .act-cf td:nth-child(2) { font-style: italic; font-family: var(--display); font-size: 14.5px; }
+.act-cf td small { font-family: var(--font); font-style: normal; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-left: 6px; }
+.act-cf td { border-top: 1px solid var(--ink-2); border-bottom: 3px double var(--ink-2); font-weight: 600; }
+.act-bal { font-weight: 600; }
+.act-bf .act-bal, .act-cf .act-bal { font-family: var(--display); font-size: 15.5px; color: var(--ink); }
+
+.act-date b { display: block; font: 600 12.5px var(--mono); letter-spacing: .04em; }
+.act-date span { font: 11px var(--mono); color: var(--muted); }
+.act-part { min-width: 0; }
+.act-who { display: block; font-weight: 600; }
+.act-note { display: block; font-size: 13px; color: var(--ink-2); max-width: 340px; overflow-wrap: anywhere; }
+.act-ref { display: block; font-size: 11.5px; color: var(--muted); letter-spacing: .02em; }
+
+.act-entry { cursor: pointer; transition: background .12s; }
+.act-table tbody tr.act-entry:hover { background: var(--surface-2); }
+.act-table tbody tr.act-entry:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; background: var(--accent-soft); }
+.act-entry.failed td:not(:last-child) { color: var(--faint); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--bad) 60%, transparent); }
+.act-entry.failed td:not(:last-child) * { color: inherit; }
+.act-table tbody tr.act-entry.leaked, .act-table tbody tr.act-entry.leaked:hover { background: var(--bad-soft); }
+.act-entry.leaked td:first-child { box-shadow: inset 3px 0 0 var(--bad); }
+.act-entry.leaked .act-note { color: var(--bad); font-weight: 600; }
+.act-leak-amt { color: var(--bad); font-weight: 600; }
+.act-table tr.pending { background: color-mix(in srgb, var(--warn-soft) 55%, transparent); }
+
+.act-empty { color: var(--muted); text-align: center; padding: 32px 12px !important; font-size: 14.5px; }
+.act-more { padding: 16px 0 0; text-align: center; }
+.act-end { margin: 14px 0 0; text-align: center; font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+
+/* ------------------------------------------------ compact rows (TxList / TxRow) */
+.act-list { display: grid; }
+.act-list-day { padding: 14px 0 6px; font: 540 16px var(--display); border-bottom: 1px solid var(--ink-2); }
+.act-list-group.pending .act-list-day { color: var(--warn); border-bottom-color: var(--warn); }
+.act-row {
+  display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 12px; align-items: start; width: 100%;
+  padding: 10px 0; border: 0; border-bottom: 1px solid var(--rule); background: none; text-align: left; font: inherit; color: var(--ink);
+}
+button.act-row { cursor: pointer; }
+button.act-row:hover { background: var(--surface-2); }
+button.act-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.act-row-date b { display: block; font: 600 12px var(--mono); }
+.act-row-date span { font: 11px var(--mono); color: var(--muted); }
+.act-row-main { display: grid; min-width: 0; }
+.act-row-who { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.act-row-note { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.act-row-amt { display: grid; justify-items: end; gap: 4px; font-family: var(--display); font-weight: 560; font-variant-numeric: tabular-nums; }
+.act-row.in .act-row-amt { color: var(--ok); }
+.act-row.failed .act-row-amt .num { color: var(--faint); text-decoration: line-through; }
+.act-row.leaked { background: var(--bad-soft); }
+.act-row.leaked .act-row-note { color: var(--bad); font-weight: 600; }
+
+/* ------------------------------------------------ voucher */
+.act-scrim {
+  position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; overflow-y: auto;
+  background: color-mix(in srgb, var(--night) 50%, transparent); animation: act-fade .15s ease-out;
+}
+.act-voucher {
+  width: min(520px, 100%); max-height: calc(100dvh - 32px); overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--rule-2); border-radius: var(--r);
+  box-shadow: var(--shadow-lg, var(--shadow)); padding: 20px 24px 0; display: grid; gap: 4px;
+  border-top: 4px solid var(--accent); animation: act-rise .18s ease-out;
+}
+.act-voucher.leaked { border-top-color: var(--bad); }
+.act-v-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+  padding-bottom: 10px; border-bottom: 2px solid var(--ink); }
+.act-v-head h2 { font-family: var(--display); font-weight: 540; font-size: 24px; letter-spacing: -0.01em; margin-top: 2px; }
+.act-v-leak { margin: 8px 0 0; padding: 8px 10px; background: var(--bad-soft); color: var(--bad); font-weight: 600; font-size: 14px;
+  border-left: 3px solid var(--bad); border-radius: 4px; }
+
+.act-v-refs { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, .8fr); column-gap: 16px; }
+.act-v-refs b { font-size: 13.5px !important; overflow-wrap: anywhere; }
+.act-v-parties { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; }
+.act-v-parties b { overflow-wrap: anywhere; }
+.act-v-parties em { font-style: normal; font-size: 12.5px; color: var(--muted); }
+
+.act-v-amount { margin-top: 8px; padding: 12px 14px; display: grid; gap: 4px; border: 1px solid var(--rule-2); border-radius: var(--r-sm);
+  background: repeating-linear-gradient(to bottom, transparent 0 27px, color-mix(in srgb, var(--rule) 70%, transparent) 27px 28px), var(--surface); }
+.act-v-figure { display: flex; align-items: baseline; gap: 6px; font-family: var(--display); font-variant-numeric: tabular-nums lining-nums; }
+.act-v-figure .cur { font-size: 18px; color: var(--muted); }
+.act-v-figure .whole { font-size: 38px; font-weight: 560; letter-spacing: -0.03em; line-height: 1.05; color: var(--ink); }
+.act-v-figure .frac { font-size: 20px; color: var(--muted); }
+.act-v-figure.struck .whole, .act-v-figure.struck .frac { color: var(--faint); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--bad) 60%, transparent); }
+.act-v-amount .pb-words { margin: 0; }
+
+.act-v-foot { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; margin-top: 6px; }
+.act-v-dl { margin: 0; display: grid; }
+.act-v-dl > div { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px dashed var(--rule-2); font-size: 14px; }
+.act-v-dl dt { color: var(--muted); }
+.act-v-dl dd { margin: 0; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+.act-v-foot .pb-stamp { margin-right: 6px; }
+
+.act-v-counterfoil { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 14px -24px 0; padding: 10px 24px 14px;
+  background: var(--surface-2); font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-radius: 0 0 var(--r) var(--r); }
+.act-v-counterfoil .num { font-family: var(--mono); text-transform: none; color: var(--ink-2); }
+
+@keyframes act-fade { from { opacity: 0 } }
+@keyframes act-rise { from { transform: translateY(10px); opacity: .6 } }
+@media (prefers-reduced-motion: reduce) { .act-scrim, .act-voucher { animation: none; } }
+
+/* ------------------------------------------------ responsive */
+@media (max-width: 760px) {
+  .act-statement { padding: 16px; }
+  .act-table-wrap { margin: 14px -16px 0; }
+  .act-st-fields { grid-template-columns: 1fr 1fr; }
+  .act-st-fields .pb-field:last-child { grid-column: 1 / -1; }
+  .act-st-closing { justify-items: start; }
+  .act-seg { width: 100%; }
+  .act-seg button { flex: 1; }
+  .act-search { min-width: 0; flex-basis: 100%; }
+  .act-voucher { padding: 16px 16px 0; }
+  .act-v-counterfoil { margin: 14px -16px 0; padding: 10px 16px 14px; }
+  .act-v-refs { grid-template-columns: 1fr 1fr; }
+  .act-v-refs .pb-field:first-child { grid-column: 1 / -1; }
+}
+@media (max-width: 440px) {
+  .act-st-fields, .act-v-parties { grid-template-columns: minmax(0, 1fr); }
+  .act-v-foot { grid-template-columns: minmax(0, 1fr); }
+  .act-v-foot .pb-stamp { justify-self: end; }
+}
+
+/* section lines are not clickable (Home's ledger rules make every tbody row look so) */
+.act-table tbody tr.act-month, .act-table tbody tr.act-bf, .act-table tbody tr.act-cf, .act-table tbody tr.pending { cursor: default; }
+.act-table tbody tr.act-month:hover { background: none; }
+.act-table tbody tr.act-bf:hover, .act-table tbody tr.act-cf:hover { background: none; }

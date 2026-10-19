@@ -1,0 +1,180 @@
+/* Home as a passbook: printed-form account page, ruled ledger with a margin rule,
+   a rubber "as of" stamp, endorsement seals and perforated payee slips. */
+
+.pb { display: grid; gap: 22px; max-width: var(--maxw); }
+
+/* ------------------------------------------------ account page */
+.pb-account {
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 0;
+  background: var(--surface); border: 1px solid var(--rule-2); border-radius: var(--r-lg);
+  box-shadow: var(--shadow); overflow: hidden; position: relative;
+}
+/* the passbook's centre fold */
+.pb-account::after {
+  content: ""; position: absolute; top: 14px; bottom: 14px; left: 51.2%; width: 1px;
+  background: repeating-linear-gradient(to bottom, var(--rule-2) 0 6px, transparent 6px 11px);
+}
+.pb-form { display: grid; grid-template-columns: 1fr 1fr; align-content: start; gap: 0; padding: 26px 30px 28px; }
+.pb-field { display: grid; gap: 2px; padding: 10px 0 9px; border-bottom: 1px solid var(--rule); }
+.pb-field.wide { grid-column: 1 / -1; }
+.pb-field > span { font: 600 10.5px/1.2 var(--font); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.pb-field b { font-weight: 600; font-size: 15.5px; color: var(--ink); }
+.pb-field.wide b { font-family: var(--display); font-weight: 520; font-size: 26px; letter-spacing: -0.01em; }
+.pb-acct { border: 0; background: none; padding: 0; text-align: left; font-size: 14.5px; font-weight: 600; color: var(--accent-ink); cursor: pointer; }
+.pb-acct:hover { text-decoration: underline; }
+
+.pb-closing { position: relative; display: grid; align-content: start; gap: 10px; padding: 26px 30px 26px 40px; background:
+  repeating-linear-gradient(to bottom, transparent 0 31px, color-mix(in srgb, var(--rule) 70%, transparent) 31px 32px), var(--surface); }
+.pb-closing-head { display: flex; justify-content: space-between; align-items: center; }
+.pb-eye { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--rule-2); background: var(--surface); border-radius: 999px; height: 28px; padding: 0 11px; font-size: 12.5px; color: var(--ink-2); }
+.pb-eye:hover { border-color: var(--ink-2); }
+.pb-figure { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; }
+.pb-figure .cur { font-family: var(--display); font-size: 22px; color: var(--muted); }
+.pb-figure .whole { font-family: var(--display); font-size: clamp(44px, 6.4vw, 66px); font-weight: 560; letter-spacing: -0.035em; line-height: 1; color: var(--ink); }
+.pb-figure .frac { font-family: var(--display); font-size: 24px; color: var(--muted); }
+.pb-figure .masked { font-family: var(--display); font-size: 40px; letter-spacing: .08em; line-height: 1.2; color: var(--ink-2); }
+
+/* rubber stamp: ink-blue, double border, slightly rotated, a little worn */
+.pb-stamp {
+  justify-self: start; display: grid; justify-items: center; gap: 0; margin: 6px 0 4px;
+  padding: 6px 14px 5px; transform: rotate(-3.5deg); color: var(--accent);
+  border: 2px solid currentColor; outline: 1px solid currentColor; outline-offset: 2px; border-radius: 4px;
+  font-family: var(--mono); text-transform: uppercase; letter-spacing: .12em; opacity: .82;
+  mask-image: radial-gradient(circle at 30% 40%, #000 62%, rgba(0,0,0,.72) 63%, #000 64%);
+}
+.pb-stamp span { font-size: 9.5px; }
+.pb-stamp b { font-size: 14px; font-weight: 600; letter-spacing: .1em; }
+.pb-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+
+/* ------------------------------------------------ grid & sheets */
+.pb-grid { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.pb-main, .pb-side { display: grid; gap: 22px; min-width: 0; }
+
+/* ------------------------------------------------ balance trail */
+.pb-trail { position: relative; }
+.pb-trail svg { display: block; touch-action: none; cursor: crosshair; }
+.pb-gline { stroke: var(--rule); stroke-width: 1; }
+.pb-line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+.pb-area { fill: var(--accent-soft); opacity: .45; }
+.pb-cross { stroke: var(--ink-2); stroke-width: 1; }
+.pb-dot { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.pb-dot.end { fill: var(--ink); }
+.pb-tick { font: 500 10.5px var(--mono); fill: var(--muted); letter-spacing: .04em; }
+.pb-trail-empty { color: var(--muted); font-size: 14px; padding: 24px 0; }
+.pb-tip {
+  position: absolute; top: 4px; transform: translateX(-50%); pointer-events: none; z-index: 2;
+  background: var(--night); color: #fff; border-radius: 8px; padding: 8px 11px; min-width: 168px;
+  box-shadow: var(--shadow-lg); font-size: 12.5px; display: grid; gap: 1px;
+}
+.pb-tip-date { font: 500 10.5px var(--mono); letter-spacing: .06em; opacity: .7; }
+.pb-tip-who { font-weight: 600; }
+.pb-tip-amt { font-family: var(--display); font-size: 17px; }
+.pb-tip-amt.cr { color: #9FE0BC; }
+.pb-tip-bal { opacity: .8; font-size: 12px; }
+
+/* ------------------------------------------------ ledger */
+.pb-ledger .pb-table-wrap { overflow-x: auto; margin: 0 -20px -20px; }
+.pb-ledger .pb-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 540px; position: relative;
+  background: linear-gradient(to right, transparent 92px, color-mix(in srgb, var(--bad) 45%, transparent) 92px 93px, transparent 93px); }
+.pb-ledger .pb-table th small { font-size: 9.5px; letter-spacing: .08em; color: var(--faint); }
+.pb-ledger .pb-table th { font: 600 10.5px/1.2 var(--font); letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+  text-align: left; padding: 8px 10px 9px 20px; border-bottom: 1px solid var(--ink-2); white-space: nowrap; }
+.pb-ledger .pb-table th + th { padding-left: 10px; }
+.pb-ledger .pb-table td.num { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pb-ledger .pb-table td { padding: 11px 10px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.pb-ledger .pb-table td:first-child { padding-left: 20px; }
+.pb-ledger .pb-table td:last-child, .pb-ledger .pb-table th:last-child { padding-right: 20px; }
+.pb-ledger .pb-table .r { text-align: right; }
+.pb-ledger .pb-table tbody tr { cursor: pointer; transition: background .12s; }
+.pb-ledger .pb-table tbody tr:hover, .pb-ledger .pb-table tbody tr:focus-visible { background: var(--surface-2); outline: none; }
+.pb-ledger .pb-date { width: 78px; white-space: nowrap; }
+.pb-ledger .pb-date b { display: block; font: 600 12.5px var(--mono); letter-spacing: .04em; }
+.pb-ledger .pb-date span { font: 11px var(--mono); color: var(--muted); }
+.pb-ledger .pb-who { display: block; font-weight: 600; }
+.pb-ledger .pb-note { display: block; font-size: 12.5px; color: var(--muted); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pb-ledger .pb-note .mono { font-size: 11.5px; }
+.pb-ledger .pb-table .cr { color: var(--ok); }
+.pb-ledger .pb-run { font-weight: 600; white-space: nowrap; }
+.pb-ledger .pb-table tr.failed td:not(:last-child) { color: var(--faint); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--bad) 60%, transparent); }
+.pb-ledger .pb-table tr.pending { background: color-mix(in srgb, var(--warn-soft) 55%, transparent); cursor: default; }
+.pb-ledger .pb-empty { color: var(--muted); text-align: center; padding: 28px 12px !important; cursor: default; }
+
+/* ------------------------------------------------ month reconciliation */
+.pb-recon dl { margin: 0; display: grid; }
+.pb-recon dl > div { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px dashed var(--rule-2); font-size: 14.5px; }
+.pb-recon dt { color: var(--ink-2); }
+.pb-recon dt small { color: var(--muted); font-size: 12px; }
+.pb-recon dd { margin: 0; font-weight: 600; white-space: nowrap; }
+.pb-recon dd.cr { color: var(--ok); }
+.pb-recon .total { border-bottom: 0; border-top: 1px solid var(--ink-2); margin-top: 4px; padding-top: 12px; box-shadow: inset 0 3px 0 -2px var(--ink-2); }
+.pb-recon .total dt { font-weight: 600; color: var(--ink); }
+.pb-recon .total dd { font-family: var(--display); font-size: 20px; }
+
+/* ------------------------------------------------ endorsements */
+.pb-endorse ul { list-style: none; margin: 10px 0 12px; padding: 0; display: grid; gap: 4px; }
+.pb-seal { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+.pb-seal:last-child { border-bottom: 0; }
+.pb-seal-mark {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  border: 1.5px solid currentColor; box-shadow: inset 0 0 0 3px var(--surface), inset 0 0 0 4px currentColor;
+}
+.pb-seal.ok .pb-seal-mark { color: var(--ok); background: var(--ok-soft); }
+.pb-seal.todo .pb-seal-mark { color: var(--faint); border-style: dashed; box-shadow: none; }
+.pb-seal-text { display: grid; line-height: 1.35; }
+.pb-seal-text b { font-size: 14px; }
+.pb-seal-text span { font-size: 12.5px; color: var(--muted); }
+.pb-seal-state { font: 600 10px var(--font); letter-spacing: .12em; text-transform: uppercase; }
+.pb-seal.ok .pb-seal-state { color: var(--ok); }
+.pb-seal.todo .pb-seal-state { color: var(--warn); }
+
+/* ------------------------------------------------ payee slips (perforated left edge) */
+.pb-slips { display: grid; gap: 8px; }
+.pb-slip {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; text-align: left;
+  padding: 10px 14px 10px 20px; border: 1px solid var(--rule-2); border-radius: 0 var(--r) var(--r) 0; background:
+    radial-gradient(circle at 0 6px, var(--surface) 3.5px, transparent 4px) 0 0 / 8px 12px repeat-y, var(--surface-2);
+  border-left: 0; position: relative; transition: transform .12s, border-color .12s;
+}
+.pb-slip::before { content: ""; position: absolute; left: 7px; top: 6px; bottom: 6px; border-left: 1px dashed var(--rule-2); }
+.pb-slip:hover { transform: translateX(3px); border-color: var(--ink-2); }
+.pb-slip b { display: block; font-size: 14px; }
+.pb-slip span span, .pb-slip .mono { font-size: 12px; color: var(--muted); }
+.pb-slip-go { font-size: 12.5px; font-weight: 600; color: var(--accent-ink); }
+.pb-slip.new { background: radial-gradient(circle at 0 6px, var(--surface) 3.5px, transparent 4px) 0 0 / 8px 12px repeat-y, var(--surface); border-style: dashed; }
+.pb-slip-plus { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; border: 1.5px dashed var(--rule-2); color: var(--muted); }
+
+/* ------------------------------------------------ responsive */
+@media (max-width: 1100px) {
+  .pb-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .pb-account { grid-template-columns: minmax(0, 1fr); }
+  .pb-account::after { display: none; }
+  .pb-form { padding: 18px 18px 6px; }
+  .pb-closing { padding: 18px; border-top: 1px dashed var(--rule-2); }
+  .pb-sheet { padding: 16px; }
+  .pb-table-wrap { margin: 0 -16px -16px; }
+}
+
+/* ------------------------------------------------ amount in words + posting calendar */
+.pb-closing .pb-words { margin: -2px 0 2px; max-width: 34ch; }
+.pb-cal-head { display: flex; justify-content: space-between; align-items: center; margin: 18px 0 8px; }
+.pb-cal-key { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.pb-cal-key i { display: inline-block; width: 10px; height: 3px; border-radius: 2px; margin-left: 6px; }
+.pb-cal-key i.in, .pb-cal-day i.in { background: var(--ok); }
+.pb-cal-key i.out, .pb-cal-day i.out { background: var(--ink); }
+.pb-cal { display: grid; grid-template-columns: repeat(auto-fill, minmax(22px, 1fr)); gap: 3px; }
+.pb-cal-day { display: grid; justify-items: center; gap: 2px; padding: 3px 0; border-radius: 4px; }
+.pb-cal-day b { font: 500 10.5px/1 var(--mono); color: var(--ink-2); }
+.pb-cal-day i { display: block; width: 12px; height: 3px; border-radius: 2px; background: transparent; }
+.pb-cal-day.today { outline: 1.5px solid var(--accent); outline-offset: -1px; }
+.pb-cal-day.today b { color: var(--accent-ink); font-weight: 700; }
+.pb-cal-day.future b { color: var(--faint); }
+
+/* beneficiary slip with a remove control */
+.pb-slip-row { position: relative; }
+.pb-slip-row .pb-slip { width: 100%; padding-right: 74px; }
+.pb-slip-row .pb-slip-go { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); }
+.pb-slip-remove { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; border-radius: 50%;
+  border: 1px solid var(--rule-2); background: var(--surface); color: var(--muted); display: grid; place-items: center; cursor: pointer; }
+.pb-slip-remove:hover { color: var(--bad); border-color: var(--bad); }

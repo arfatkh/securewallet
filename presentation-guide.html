@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SecureWallet Demo Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#F6F2EA; --surface:#FFFDF8; --surface-2:#EFE9DD; --ink:#16181D; --ink-2:#3A3E47; --muted:#646873;
+  --rule:#E2DACB; --rule-2:#CFC5B2; --accent:#2747D6; --accent-ink:#1A2F94; --accent-soft:#E4E9FD;
+  --ok:#1F7A4D; --ok-soft:#DFF1E6; --warn:#9A5800; --warn-soft:#FBEBD0; --bad:#B3261E; --bad-soft:#FBE3E0;
+  --israr:#1F5FA8; --israr-soft:#E3EDF9; --burhan:#7A3E9D; --burhan-soft:#F0E6F6;
+  --code:#F1EDE4; --code-ink:#1E2230;
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#14161C; --surface:#1B1E26; --surface-2:#232733; --ink:#ECE8DF; --ink-2:#C9C5BB; --muted:#9A9DA6;
+    --rule:#2E323D; --rule-2:#3B404D; --accent:#8EA4FF; --accent-ink:#B4C3FF; --accent-soft:#232C52;
+    --ok:#6FCF9E; --ok-soft:#173326; --warn:#E8B062; --warn-soft:#3A2B14; --bad:#F08A80; --bad-soft:#3D1D1A;
+    --israr:#8FB8EE; --israr-soft:#1C2A3E; --burhan:#CDA3E6; --burhan-soft:#2E2238;
+    --code:#11131A; --code-ink:#DCD8CF;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 var(--font);-webkit-font-smoothing:antialiased;padding-inline:16px}
+a{color:var(--accent-ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,h4{margin:0;line-height:1.2;text-wrap:balance}
+h1,h2{font-family:var(--display);font-weight:600;letter-spacing:-.015em}
+p{margin:0 0 10px;max-width:72ch}
+code,.mono{font-family:var(--mono);font-size:.88em}
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:240px minmax(0,1fr);gap:40px;padding-block:28px 80px}
+@media (max-width:960px){.wrap{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
+
+/* ---------- toc */
+.toc{position:sticky;top:20px;align-self:start;max-height:calc(100vh - 40px);overflow:auto;font-size:14px;padding-right:6px}
+.toc b{display:block;font:600 11px var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;counter-reset:t}
+.toc a{display:block;padding:5px 10px;border-radius:6px;color:var(--ink-2);text-decoration:none;border-left:2px solid transparent}
+.toc a:hover{background:var(--surface-2)}
+.toc a.on{border-left-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+
+/* ---------- header */
+header.top{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:26px}
+.eyebrow{font:600 11.5px var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+header.top h1{font-size:clamp(32px,5vw,46px);margin:6px 0 10px}
+.lede{font-size:18px;color:var(--ink-2);max-width:68ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:14px;color:var(--muted)}
+.meta b{color:var(--ink)}
+
+/* ---------- sections */
+section{padding-top:34px;scroll-margin-top:12px}
+section>h2{font-size:28px;margin-bottom:6px;display:flex;align-items:baseline;gap:12px}
+section>h2 .n{font:600 13px var(--mono);color:var(--accent);border:1.5px solid currentColor;border-radius:4px;padding:1px 6px;transform:translateY(-4px)}
+section>.sub{color:var(--muted);margin-bottom:16px}
+h3{font-size:18px;margin:22px 0 8px}
+.card{background:var(--surface);border:1px solid var(--rule-2);border-radius:12px;padding:18px 20px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:15px}
+.note.warn{border-color:var(--warn);background:var(--warn-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+.note.ok{border-color:var(--ok);background:var(--ok-soft)}
+.note b:first-child{display:block;margin-bottom:2px}
+ul.tight,ol.tight{margin:6px 0 10px;padding-left:22px}
+ul.tight li,ol.tight li{margin:3px 0}
+
+/* speakers */
+.who{display:inline-block;font:600 11px var(--font);letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;white-space:nowrap;vertical-align:2px}
+.who.i{background:var(--israr-soft);color:var(--israr)}
+.who.b{background:var(--burhan-soft);color:var(--burhan)}
+.who.both{background:var(--surface-2);color:var(--ink-2)}
+
+/* ---------- run sheet */
+.runsheet{display:grid;gap:0;border:1px solid var(--rule-2);border-radius:12px;overflow:hidden;background:var(--surface)}
+.rs{display:grid;grid-template-columns:70px 1fr auto;gap:14px;align-items:center;padding:11px 16px;border-bottom:1px solid var(--rule)}
+.rs:last-child{border-bottom:0}
+.rs .t{font:600 13px var(--mono);color:var(--muted)}
+.rs .w{font-weight:600}
+.rs .w span{display:block;font-weight:400;font-size:13.5px;color:var(--muted)}
+.bar{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--accent)}
+@media (max-width:560px){.rs{grid-template-columns:52px 1fr}.rs .who{grid-column:2}}
+
+/* ---------- checklist */
+.check{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.check li label{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;border:1px solid var(--rule);border-radius:8px;background:var(--surface);cursor:pointer}
+.check input{margin-top:5px;accent-color:var(--accent);width:16px;height:16px;flex:none}
+.check input:checked+span{color:var(--muted);text-decoration:line-through}
+
+/* ---------- tables */
+.tw{overflow-x:auto;border:1px solid var(--rule-2);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font:600 11px var(--font);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 12px;border-bottom:1.5px solid var(--ink-2);white-space:nowrap;background:var(--surface)}
+td{padding:9px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.id{font:600 13px var(--mono);color:var(--accent-ink);white-space:nowrap}
+.pill{display:inline-block;font:600 11.5px var(--mono);padding:1px 7px;border-radius:4px;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.info{background:var(--accent-soft);color:var(--accent-ink)}
+
+/* ---------- scenes */
+.scene{background:var(--surface);border:1px solid var(--rule-2);border-radius:14px;margin:18px 0;overflow:hidden}
+.scene>header{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--rule);background:var(--surface-2)}
+.scene>header .num{font:600 13px var(--mono);background:var(--ink);color:var(--paper);border-radius:6px;padding:3px 8px}
+.scene>header h3{margin:0;font-size:19px;flex:1;min-width:200px}
+.scene>header .dur{font:500 13px var(--mono);color:var(--muted)}
+.scene .body{padding:16px 18px;display:grid;gap:14px}
+.steps{margin:0;padding-left:0;list-style:none;counter-reset:s;display:grid;gap:8px}
+.steps>li{counter-increment:s;position:relative;padding-left:36px;min-height:26px}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;font:600 12px var(--mono);width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-ink)}
+.say{border-left:3px solid var(--burhan);padding:8px 14px;background:color-mix(in srgb,var(--surface-2) 60%,transparent);border-radius:0 8px 8px 0;font-size:15.5px}
+.say.i{border-color:var(--israr)}
+.say>b{display:block;font:600 11px var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.say q{quotes:"\201C" "\201D";font-style:italic}
+.kbd{font:600 12.5px var(--mono);border:1px solid var(--rule-2);border-bottom-width:2px;border-radius:5px;padding:0 6px;background:var(--surface)}
+.click{font-weight:600;color:var(--accent-ink)}
+
+/* ---------- payloads */
+.payload{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;border:1px solid var(--rule-2);border-radius:10px;overflow:hidden}
+@media (max-width:820px){.payload{grid-template-columns:minmax(0,1fr)}}
+.payload>div{min-width:0}
+.payload>div+div{border-left:1px solid var(--rule-2)}
+@media (max-width:820px){.payload>div+div{border-left:0;border-top:1px solid var(--rule-2)}}
+.ph{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--surface-2);font:600 12px var(--mono);border-bottom:1px solid var(--rule-2)}
+.ph .m{background:var(--ink);color:var(--paper);border-radius:4px;padding:0 6px}
+.ph .s{margin-left:auto}
+pre{margin:0;padding:10px 12px;background:var(--code);color:var(--code-ink);font:12.5px/1.55 var(--mono);overflow-x:auto;white-space:pre}
+pre .k{color:var(--accent-ink)} pre .c{color:var(--muted)}
+.fields{margin:10px 0 0;display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;font-size:14px}
+.fields dt{font:600 12.5px var(--mono);color:var(--accent-ink)}
+.fields dd{margin:0;color:var(--ink-2)}
+.copy{margin-left:8px;border:1px solid var(--rule-2);background:var(--surface);color:var(--ink-2);border-radius:5px;font:500 11px var(--font);padding:2px 7px;cursor:pointer}
+
+/* trace list */
+.trace{list-style:none;margin:0;padding:0;border:1px solid var(--rule-2);border-radius:10px;overflow:hidden;background:var(--surface)}
+.trace li{display:grid;grid-template-columns:24px 92px 34px 1fr;gap:10px;align-items:start;padding:8px 12px;border-bottom:1px solid var(--rule);font-size:14px}
+.trace li:last-child{border-bottom:0}
+.trace .no{font:600 12px var(--mono);color:var(--muted)}
+.lane{font:600 11px var(--mono);padding:1px 6px;border-radius:4px;border:1px solid var(--rule-2);justify-self:start}
+.lane.API{color:var(--ok)} .lane.Database{color:var(--warn)} .lane.Browser{color:var(--accent-ink)} .lane.Authenticator{color:var(--burhan)}
+.ly{font:600 11px var(--mono);color:var(--muted)}
+.trace li span:last-child b{display:block;font-weight:600}
+.trace li span:last-child i{font-style:normal;color:var(--muted);font-size:13.5px}
+@media (max-width:560px){.trace li{grid-template-columns:24px 1fr}.trace .lane,.trace .ly{display:none}}
+
+/* lab table result cells */
+.res{font-size:13.5px}
+.res .pill{margin-bottom:3px}
+
+/* q&a */
+details.qa{border:1px solid var(--rule-2);border-radius:10px;background:var(--surface);margin:8px 0}
+details.qa summary{cursor:pointer;padding:11px 14px;font-weight:600;list-style:none;display:flex;gap:10px}
+details.qa summary::before{content:"Q";font:600 12px var(--mono);color:var(--accent);border:1.5px solid currentColor;border-radius:4px;padding:0 5px;height:fit-content;margin-top:2px}
+details.qa[open] summary{border-bottom:1px solid var(--rule)}
+details.qa>div{padding:10px 14px 12px 44px;color:var(--ink-2)}
+
+/* arch svg */
+.arch{width:100%;height:auto;display:block}
+.arch text{font-family:var(--font);fill:var(--ink)}
+.arch .q{fill:var(--muted)}
+.arch .box{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+.arch .ctl{fill:var(--ok-soft);stroke:var(--rule-2)}
+.arch .net{fill:none;stroke:var(--rule-2);stroke-dasharray:5 4}
+.arch .net.in{stroke:var(--bad)}
+.arch .ln{stroke:var(--ink-2);stroke-width:1.4;fill:none}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--rule-2);color:var(--muted);font-size:13.5px}
+@media print{.toc,.copy{display:none}.wrap{grid-template-columns:1fr}body{background:#fff}.scene,.card,.tw{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+  <b>Demo guide</b>
+  <ol>
+    <li><a href="#runsheet">Run sheet (20 min)</a></li>
+    <li><a href="#setup">Before you start</a></li>
+    <li><a href="#opening">Opening (what to say)</a></li>
+    <li><a href="#arch">Architecture</a></li>
+    <li><a href="#controls">The 13 controls</a></li>
+    <li><a href="#flow">Live demo flow</a></li>
+    <li><a href="#lab">Security Lab script</a></li>
+    <li><a href="#trace">Reading the trace</a></li>
+    <li><a href="#payloads">Payload reference</a></li>
+    <li><a href="#codes">Status codes</a></li>
+    <li><a href="#qa">Examiner questions</a></li>
+    <li><a href="#limits">Limitations</a></li>
+    <li><a href="#rescue">If something breaks</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="top">
+  <div class="eyebrow">CY-5004 Secure Software Design · Assignment 1 · Live demonstration</div>
+  <h1>SecureWallet demo guide</h1>
+  <p class="lede">Everything you need to present the wallet in one place: who says what, what to click, which payload to show and how to explain every field. Follow the sections in order; each scene says what to do, what to say and what the examiner will see.</p>
+  <div class="meta">
+    <span><span class="who i">Israr</span> Israr Ahmed · 26I-7722</span>
+    <span><span class="who b">Burhan</span> Burhan Ud Din · 26I-7711</span>
+    <span>App: <b class="mono">http://localhost:8080</b></span>
+    <span>Password: <b class="mono">Wallet@2026!</b> · PIN: <b class="mono">482915</b></span>
+  </div>
+</header>
+
+<!-- ================================================================ RUN SHEET -->
+<section id="runsheet">
+  <h2><span class="n">01</span>Run sheet</h2>
+  <p class="sub">About 20 minutes plus questions. Keep the times; cut Lab cards from the end if you run long (W1, W11, W12, W13 are the must-shows).</p>
+  <div class="runsheet">
+    <div class="rs"><span class="t">0:00</span><span class="w">Opening: problem, approach, stack<span>Asset → Weakness → Impact → Control; 13 controls; 39 tests</span><div class="bar"><i style="width:10%"></i></div></span><span class="who i">Israr</span></div>
+    <div class="rs"><span class="t">1:30</span><span class="w">Architecture and where controls live<span>Diagram, two DB roles, RLS, Docker networks</span><div class="bar"><i style="width:15%"></i></div></span><span class="who i">Israr</span></div>
+    <div class="rs"><span class="t">3:30</span><span class="w">Functional flow: sign in, home, send Rs 2,000 to Sara<span>Brief's own example; cheque, PIN, counterfoil, Sara's side</span><div class="bar"><i style="width:20%"></i></div></span><span class="who b">Burhan</span></div>
+    <div class="rs"><span class="t">7:00</span><span class="w">Passkey step-up: Rs 75,000 to Hina<span>202 held → device signs → 201; trace shows ECDSA</span><div class="bar"><i style="width:15%"></i></div></span><span class="who b">Burhan</span></div>
+    <div class="rs"><span class="t">9:30</span><span class="w">Statement, voucher, Security page, sign-out<span>Running balance, endorsements, history requirement</span><div class="bar"><i style="width:8%"></i></div></span><span class="who b">Burhan</span></div>
+    <div class="rs"><span class="t">11:00</span><span class="w">Security Lab: before/after for every control<span>W1 → W12 in order, W13 last (it signs you out)</span><div class="bar"><i style="width:35%"></i></div></span><span class="who both">Both</span></div>
+    <div class="rs"><span class="t">17:30</span><span class="w">Auditor: reconciliation and audit trail<span>BALANCED stamp, every rejection recorded</span><div class="bar"><i style="width:8%"></i></div></span><span class="who i">Israr</span></div>
+    <div class="rs"><span class="t">19:00</span><span class="w">Limitations and close<span>TLS, cookie binding, key storage; thank the examiner</span><div class="bar"><i style="width:5%"></i></div></span><span class="who i">Israr</span></div>
+  </div>
+  <div class="note"><b>Who drives the mouse</b>One person drives while the other talks. Swap the laptop at the Lab section so each of you demonstrates the controls you built (see the controls table: the speaker chip shows who owns each one).</div>
+</section>
+
+<!-- ================================================================ SETUP -->
+<section id="setup">
+  <h2><span class="n">02</span>Before you start</h2>
+  <p class="sub">Do this 15 minutes before. Tick as you go (ticks are saved in this browser only).</p>
+  <ul class="check" id="checklist">
+    <li><label><input type="checkbox" id="c1"><span>Start <b>Docker Desktop</b> and wait until it says “Engine running”.</span></label></li>
+    <li><label><input type="checkbox" id="c2"><span>In the <code>A1</code> folder run <code>docker compose up --build</code> and wait for all three containers (<code>db</code>, <code>api</code>, <code>web</code>). Open <code>http://localhost:8080</code>, not 127.0.0.1 (passkeys are bound to the name <code>localhost</code>).</span></label></li>
+    <li><label><input type="checkbox" id="c3"><span>Sign in as <b>ali</b>, press <span class="kbd">Ctrl</span>+<span class="kbd">Shift</span>+<span class="kbd">D</span> (presenter tools), open <b>Security lab</b> and press <b>Reset demo data</b>. You are signed out; that's expected. All 13 switches are now ON and balances are fresh.</span></label></li>
+    <li><label><input type="checkbox" id="c4"><span>Passkey: if the laptop has Windows Hello (PIN/face/fingerprint) you're fine. If not, in Chrome open DevTools → ⋮ → More tools → <b>WebAuthn</b> → tick “Enable virtual authenticator environment” → <b>Add</b> (protocol ctap2, transport internal, tick “Supports user verification” and “Supports resident keys”). Keep DevTools open on that tab.</span></label></li>
+    <li><label><input type="checkbox" id="c5"><span>Open a second browser window in <b>Incognito</b> for Sara, so you can show the money arriving without signing Ali out.</span></label></li>
+    <li><label><input type="checkbox" id="c6"><span>Have <code>report/main.pdf</code> open in another tab for the Security Design Table, and this guide on a phone or second screen.</span></label></li>
+    <li><label><input type="checkbox" id="c7"><span>Zoom the browser to 110–125% so the examiner can read the trace panel.</span></label></li>
+  </ul>
+  <h3>Accounts</h3>
+  <div class="tw"><table>
+    <thead><tr><th>User</th><th>Role</th><th>Use it for</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">ali</td><td>customer</td><td>Main demo account: send money, passkey, Lab attacks</td></tr>
+      <tr><td class="mono">sara</td><td>customer</td><td>Receiver of Rs 2,000 (show her side in Incognito); BOLA target</td></tr>
+      <tr><td class="mono">hina</td><td>customer</td><td>Step-up payee (Rs 75,000); W3 brute-force target (gets locked for a minute)</td></tr>
+      <tr><td class="mono">bilal</td><td>customer</td><td>W8 large-transfer payee</td></tr>
+      <tr><td class="mono">auditor</td><td>auditor</td><td>Reconciliation and audit trail; cannot move money</td></tr>
+    </tbody>
+  </table></div>
+  <p style="margin-top:10px">All passwords: <code>Wallet@2026!</code> · transaction PIN for every customer: <code>482915</code> · amounts in the API are <b>paisa</b> (Rs 1 = 100 paisa).</p>
+</section>
+
+<!-- ================================================================ OPENING -->
+<section id="opening">
+  <h2><span class="n">03</span>Opening</h2>
+  <p class="sub">90 seconds. Say it in your own words; these are the points that must land.</p>
+  <div class="say i"><b>Israr · opening</b>
+    <q>SecureWallet is a mini fintech wallet: customers sign in, see their balance, send rupees to other customers and see their history, exactly the six operations in the brief. We didn't start from a list of security features. We followed the brief's chain, Asset → Weakness → Impact → Control: we listed what needs protecting, asked the brief's questions against our own design, found thirteen concrete weaknesses, and picked one control for each. Every control has a switch in our Security Lab, so we can show the attack working before and blocked after, and every one has an automated test. All 39 tests pass.</q></div>
+  <div class="grid2" style="margin-top:14px">
+    <div class="card"><h4>Stack</h4><ul class="tight"><li>React 18 + Vite front end, served by nginx</li><li>FastAPI (Python 3.12) back end</li><li>PostgreSQL 16 database</li><li>Docker Compose, three containers</li></ul></div>
+    <div class="card"><h4>Numbers to remember</h4><ul class="tight"><li><b>13</b> weaknesses → <b>13</b> controls (W1–W13)</li><li><b>39</b> automated tests, all passing</li><li><b>6</b> defence layers (Lecture 2, L1–L6)</li><li>Money stored as integer <b>paisa</b>, never floats</li></ul></div>
+  </div>
+</section>
+
+<!-- ================================================================ ARCH -->
+<section id="arch">
+  <h2><span class="n">04</span>Architecture</h2>
+  <p class="sub">Show the report's Figure 2 or draw this. The key sentence: <i>the database itself enforces ownership, so a bug in the API cannot leak another customer's data.</i></p>
+  <div class="card">
+  <svg class="arch" viewBox="0 0 860 300" role="img" aria-label="Browser to nginx to FastAPI to PostgreSQL, with the controls at each hop">
+    <rect class="net" x="196" y="16" width="430" height="262" rx="12"/><text class="q" x="206" y="272" font-size="12">Docker network: edge</text>
+    <rect class="net in" x="642" y="16" width="208" height="262" rx="12"/><text class="q" x="652" y="272" font-size="12">internal: no internet, no port</text>
+    <rect class="box" x="16" y="40" width="160" height="56" rx="8"/><text x="96" y="64" text-anchor="middle" font-weight="600" font-size="15">Browser</text><text class="q" x="96" y="84" text-anchor="middle" font-size="12">React SPA</text>
+    <rect class="box" x="214" y="40" width="160" height="56" rx="8"/><text x="294" y="64" text-anchor="middle" font-weight="600" font-size="15">nginx :8080</text><text class="q" x="294" y="84" text-anchor="middle" font-size="12">static app + /api proxy</text>
+    <rect class="box" x="448" y="40" width="160" height="56" rx="8"/><text x="528" y="64" text-anchor="middle" font-weight="600" font-size="15">FastAPI</text><text class="q" x="528" y="84" text-anchor="middle" font-size="12">DB role wallet_app</text>
+    <rect class="box" x="664" y="40" width="166" height="56" rx="8"/><text x="747" y="64" text-anchor="middle" font-weight="600" font-size="15">PostgreSQL 16</text><text class="q" x="747" y="84" text-anchor="middle" font-size="12">RLS + grants</text>
+    <path class="ln" d="M176 68H214M374 68H448M608 68H664"/>
+    <rect class="ctl" x="214" y="112" width="160" height="72" rx="8"/><text x="224" y="132" font-size="12">CSP, no framing, nosniff</text><text x="224" y="150" font-size="12">32 KB body cap</text><text x="224" y="168" font-size="12">rate limit /api/auth</text>
+    <rect class="ctl" x="448" y="112" width="160" height="150" rx="8"/>
+    <text x="458" y="132" font-size="12">W3 throttle + lockout</text><text x="458" y="150" font-size="12">W4 ES256 JWT</text><text x="458" y="168" font-size="12">W5 strict schemas</text><text x="458" y="186" font-size="12">W6 idempotency keys</text><text x="458" y="204" font-size="12">W8 risk + passkey</text><text x="458" y="222" font-size="12">W9 roles · W10 audit</text><text x="458" y="240" font-size="12">W11 PIN · W12 crypto</text><text x="458" y="258" font-size="12">W13 idle check</text>
+    <rect class="ctl" x="664" y="112" width="166" height="130" rx="8"/>
+    <text x="674" y="132" font-size="12">W1 row-level security</text><text x="674" y="150" font-size="12">W2 argon2id hashes</text><text x="674" y="168" font-size="12">W7 transfer_funds()</text><text x="674" y="186" font-size="12">W12 ciphertext columns</text><text x="674" y="204" font-size="12">W13 sessions table</text><text x="674" y="222" font-size="12">append-only audit</text>
+    <rect class="box" x="16" y="188" width="160" height="56" rx="8"/><text x="96" y="212" text-anchor="middle" font-weight="600" font-size="15">Authenticator</text><text class="q" x="96" y="232" text-anchor="middle" font-size="12">Windows Hello / key</text>
+    <path class="ln" d="M96 96V188"/><text class="q" x="104" y="146" font-size="12">WebAuthn</text>
+  </svg>
+  </div>
+  <h3>Points to say</h3>
+  <ul class="tight">
+    <li><b>Two database roles.</b> <code>wallet_owner</code> owns the tables; the API connects as <code>wallet_app</code>, which is not the owner and has <code>NOBYPASSRLS</code>, so every row-level-security policy applies to it.</li>
+    <li><b>The app role cannot change balances.</b> It has no UPDATE on <code>wallets</code> and no INSERT on <code>transactions</code>; the only way money moves is the database function <code>transfer_funds()</code>.</li>
+    <li><b>The database is unreachable from outside.</b> It sits on an internal Docker network with no published port and no internet route.</li>
+    <li><b>Defence layers (Lecture 2):</b> L1 trust the actor (passwords, tokens, PIN, passkey) · L2 validate the action (schemas, idempotency, risk) · L3 protect the data (RLS, encryption, atomic transfer) · L4 contain (Docker, CSP) · L5 detect (audit) · L6 recover (reconciliation).</li>
+  </ul>
+</section>
+
+<!-- ================================================================ CONTROLS -->
+<section id="controls">
+  <h2><span class="n">05</span>The 13 controls</h2>
+  <p class="sub">Each row: the asset, the weakness the brief's question exposed, the control, where it lives, and the result you will show. Speaker chip = who explains it.</p>
+  <div class="tw"><table>
+    <thead><tr><th>ID</th><th>Weakness (asset)</th><th>Control</th><th>Where</th><th>Before → After</th><th></th></tr></thead>
+    <tbody>
+      <tr><td class="id">W1</td><td>BOLA/IDOR: change the wallet id in the URL, read someone else's wallet <i>(balances, history)</i></td><td>Postgres row-level security + ownership filter in API queries</td><td class="mono">schema.sql, db.py, wallet.py</td><td class="res"><span class="pill bad">200 Sara's balance</span> → <span class="pill ok">404</span></td><td><span class="who i">Israr</span></td></tr>
+      <tr><td class="id">W2</td><td>Passwords stored readable <i>(credentials)</i></td><td>argon2id, 64 MiB, t=3, p=2, random salt</td><td class="mono">passwords.py</td><td class="res"><span class="pill bad">plain$open-sesame…</span> → <span class="pill ok">$argon2id$…</span></td><td><span class="who i">Israr</span></td></tr>
+      <tr><td class="id">W3</td><td>Unlimited password guessing <i>(accounts)</i></td><td>20/min per IP + lock after 5 failures (60 s, doubling)</td><td class="mono">ratelimit.py, auth.py</td><td class="res"><span class="pill bad">200 taken over</span> → <span class="pill ok">429 locked</span></td><td><span class="who i">Israr</span></td></tr>
+      <tr><td class="id">W4</td><td>Edited token accepted <i>(session)</i></td><td>ES256-signed JWT, pinned alg, all claims, revocation</td><td class="mono">tokens.py, deps.py</td><td class="res"><span class="pill bad">200 as Sara</span> → <span class="pill ok">401</span></td><td><span class="who i">Israr</span></td></tr>
+      <tr><td class="id">W5</td><td>Negative / fractional / extra-field amounts <i>(balance)</i></td><td>Strict schema + server rules + DB re-check + CHECKs</td><td class="mono">schemas.py, transfers.py</td><td class="res"><span class="pill bad">201, balance up</span> → <span class="pill ok">422</span></td><td><span class="who b">Burhan</span></td></tr>
+      <tr><td class="id">W6</td><td>Replay / double-click pays twice <i>(balance)</i></td><td>Idempotency-Key, stored response replayed</td><td class="mono">transfers.py</td><td class="res"><span class="pill bad">charged 5×</span> → <span class="pill ok">charged 1×</span></td><td><span class="who b">Burhan</span></td></tr>
+      <tr><td class="id">W7</td><td>Race condition, partial failure <i>(ledger)</i></td><td>One SQL function, row locks in fixed order, one transaction</td><td class="mono">transfer_funds()</td><td class="res"><span class="pill bad">lost updates</span> → <span class="pill ok">exact, reconciles</span></td><td><span class="who i">Israr</span></td></tr>
+      <tr><td class="id">W8</td><td>Stolen session can move big sums <i>(balance)</i></td><td>Risk engine → FIDO2 passkey bound to that transfer</td><td class="mono">risk.py, transfers.py</td><td class="res"><span class="pill bad">201 no passkey</span> → <span class="pill ok">202 held</span></td><td><span class="who b">Burhan</span></td></tr>
+      <tr><td class="id">W9</td><td>Customer reaches auditor functions <i>(audit log)</i></td><td>Scopes per role; role check in API and in DB function</td><td class="mono">deps.py, auditing.py</td><td class="res"><span class="pill bad">200 log leaked</span> → <span class="pill ok">403</span></td><td><span class="who b">Burhan</span></td></tr>
+      <tr><td class="id">W10</td><td>Rejections unrecorded, secrets in logs <i>(audit)</i></td><td>Every outcome audited, redacted, append-only trigger</td><td class="mono">audit.py</td><td class="res"><span class="pill info">always on</span></td><td><span class="who i">Israr</span></td></tr>
+      <tr><td class="id">W11</td><td>A live session alone can pay <i>(balance)</i></td><td>6-digit transaction PIN, argon2id hash, 3 tries → 15 min lock</td><td class="mono">tpin.py, routers/tpin.py</td><td class="res"><span class="pill bad">201 no PIN</span> → <span class="pill ok">403</span></td><td><span class="who b">Burhan</span></td></tr>
+      <tr><td class="id">W12</td><td>Names, notes, audit details readable in the DB <i>(PII)</i></td><td>AES-256-GCM at rest, per-row AAD, key outside the DB</td><td class="mono">crypto.py</td><td class="res"><span class="pill bad">"Probe Person"</span> → <span class="pill ok">enc:v1:…</span></td><td><span class="who i">Israr</span></td></tr>
+      <tr><td class="id">W13</td><td>Session never ends while the tab is open <i>(access)</i></td><td>Server-enforced idle timeout (5 min), absolute 8 h</td><td class="mono">sessions.py, session.jsx</td><td class="res"><span class="pill bad">200 after idle</span> → <span class="pill ok">401 session_idle</span></td><td><span class="who b">Burhan</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>The one-line principle for each</b>W1 logged in ≠ allowed · W2 never store what you can verify · W3 per-account, not just per-IP · W4 trust starts after the signature · W5 never trust the client · W6 retries must be safe · W7 debit and credit together or not at all · W8 big money needs the device · W9 least privilege · W10 every outcome leaves a record · W11 a second secret the session doesn't carry · W12 a stolen dump must be useless · W13 an unattended screen must expire.</div>
+</section>
+
+<!-- ================================================================ FLOW -->
+<section id="flow">
+  <h2><span class="n">06</span>Live demo flow</h2>
+  <p class="sub">Presenter tools ON from the start (<span class="kbd">Ctrl</span>+<span class="kbd">Shift</span>+<span class="kbd">D</span> on the sign-in page), so every request appears in the trace panel. Use the panel's filter to show one action at a time.</p>
+
+  <!-- Scene A -->
+  <article class="scene">
+    <header><span class="num">A</span><h3>Sign in as Ali</h3><span class="dur">~1 min</span><span class="who b">Burhan</span></header>
+    <div class="body">
+      <ol class="steps">
+        <li>On the sign-in page press <span class="kbd">Ctrl</span>+<span class="kbd">Shift</span>+<span class="kbd">D</span>. Type <code>ali</code> / <code>Wallet@2026!</code> and click <span class="click">Sign in</span>.</li>
+        <li>In the trace panel, filter to <b>Sign in as @ali</b> and open <code>POST /api/auth/login</code>. Point at: <i>Rate limit by client IP → Account lockout → Verify password with argon2id → Sign access token (ES256) → Issue refresh token</i>.</li>
+      </ol>
+      <div class="payload">
+        <div><div class="ph"><span class="m">POST</span>/api/auth/login</div><pre>{
+  "username": "ali",
+  "password": "Wallet@2026!"
+}</pre></div>
+        <div><div class="ph">Response<span class="s pill ok">200</span></div><pre>{
+  "access_token": "eyJhbGciOiJFUzI1NiIs…",
+  "expires_in": 900,
+  "user": {
+    "id": "4f102caa-…-95f1f4080243",
+    "username": "ali",
+    "full_name": "Ali Raza",
+    "role": "customer"
+  }
+}
+<span class="c">Set-Cookie: sw_refresh=&lt;random 256-bit&gt;;
+  HttpOnly; Max-Age=604800;
+  Path=/api/auth; SameSite=strict</span></pre></div>
+      </div>
+      <dl class="fields">
+        <dt>access_token</dt><dd>ES256-signed JWT, lives 15 min (<code>expires_in: 900</code>), kept only in browser memory, never localStorage.</dd>
+        <dt>sw_refresh</dt><dd>Refresh cookie: <b>HttpOnly</b> (JavaScript can't read it), <b>SameSite=Strict</b> (other sites can't send it), path-limited to <code>/api/auth</code>. Only its SHA-256 is stored in the DB; it rotates on every use.</dd>
+        <dt>password</dt><dd>Checked against an argon2id hash; never stored, never logged (the audit row has the username only).</dd>
+      </dl>
+      <h4>Inside the token (decoded)</h4>
+      <pre>header:  {"alg": "ES256", "kid": "k-ce49da3d13", "typ": "JWT"}
+payload: {"iss": "securewallet-auth", "sub": "4f102caa-…", "aud": "wallet-api",
+          "iat": 1791802124, "nbf": 1791802124, "exp": 1791803024,
+          "jti": "8bf94c74cc0f31ab1d2a29b5", "role": "customer", "name": "ali",
+          "scope": "wallet:read transfer:write passkey:manage",
+          "amr": ["pwd"], "sid": "a4769faa-…-3586f9c226e0"}</pre>
+      <dl class="fields">
+        <dt>alg / kid</dt><dd>Algorithm pinned to ES256 (ECDSA P-256); <code>kid</code> picks the key. Blocks <code>alg:none</code> tricks.</dd>
+        <dt>sub</dt><dd>The user id. This is what RLS binds to the DB session. Changing it breaks the signature (W4).</dd>
+        <dt>aud / iss</dt><dd>Only this API accepts it; only our issuer signs it.</dd>
+        <dt>exp / nbf / iat</dt><dd>15-minute lifetime, 30 s clock leeway.</dd>
+        <dt>jti</dt><dd>Unique id; logout puts it on a revocation list so a copy dies immediately.</dd>
+        <dt>scope / role</dt><dd>What this user may do. Auditors get <code>audit:read</code> only, no <code>transfer:write</code> (W9).</dd>
+        <dt>sid</dt><dd>Server-side session id, checked on every request for the idle timeout (W13).</dd>
+      </dl>
+      <div class="say"><b>Say</b><q>The password is verified against an argon2id hash. We get back a short-lived signed token that stays in memory, and an HttpOnly cookie the page itself can't read. Notice the sid claim: the server tracks this session and will end it after five minutes of inactivity.</q></div>
+    </div>
+  </article>
+
+  <!-- Scene B -->
+  <article class="scene">
+    <header><span class="num">B</span><h3>Home: the passbook</h3><span class="dur">~1 min</span><span class="who b">Burhan</span></header>
+    <div class="body">
+      <ul class="tight">
+        <li><b>Account page</b>: holder, account no., closing balance with the amount <b>in words</b> (lakh/crore), and an “as of” stamp.</li>
+        <li><b>Balance trail</b>: step chart of the real running balance; hover a step.</li>
+        <li><b>Ledger</b>: Date · Particulars · Debit · Credit · <b>Balance on every line</b>.</li>
+        <li><b>Month sheet</b>: brought forward + deposits − withdrawals = carried forward, and the posting calendar.</li>
+        <li><b>Endorsements</b>: password, transaction PIN, passkey, session guard, each showing its real state.</li>
+      </ul>
+      <div class="payload">
+        <div><div class="ph"><span class="m">GET</span>/api/me</div><pre><span class="c">Authorization: Bearer eyJhbGci…</span></pre></div>
+        <div><div class="ph">Response<span class="s pill ok">200</span></div><pre>{
+  "user": {"id": "4f102caa-…", "username": "ali",
+           "full_name": "Ali Raza", "role": "customer",
+           "member_since": "2026-10-12T10:48:42Z"},
+  "wallet": {"id": "16b5bb5a-…-915f2bc9a952",
+             "balance": 24920000,
+             "currency": "PKR", "status": "active"},
+  "passkeys": 0,
+  "has_tpin": true
+}</pre></div>
+      </div>
+      <dl class="fields">
+        <dt>balance</dt><dd><code>24920000</code> paisa = Rs 249,200.00. Integers only, no floating-point rounding anywhere.</dd>
+        <dt>wallet.id</dt><dd>Random UUID; returned only because RLS let this row through for Ali.</dd>
+        <dt>has_tpin / passkeys</dt><dd>Drive the endorsement seals and the PIN/passkey nudges.</dd>
+      </dl>
+    </div>
+  </article>
+
+  <!-- Scene C -->
+  <article class="scene">
+    <header><span class="num">C</span><h3>Send Rs 2,000 to Sara (the brief's example)</h3><span class="dur">~3 min</span><span class="who b">Burhan</span></header>
+    <div class="body">
+      <ol class="steps">
+        <li>Click <span class="click">Send money</span>, type <code>sara</code> on the Pay line, <span class="click">Continue</span>. (Lookup request.)</li>
+        <li>Type <code>2,000</code>. Point at the Rupees line filling in: “Two thousand rupees only”. Memo: <code>Rent share</code>. <span class="click">Review</span>.</li>
+        <li>On the signature line enter PIN <code>482915</code>, click <span class="click">Send Rs 2,000.00</span>. Counterfoil stamped <b>PAID</b>.</li>
+        <li>In the trace, open <code>POST /api/transfers</code> (16 steps, see <a href="#trace">section 08</a>).</li>
+        <li>In the Incognito window sign in as <code>sara</code>: balance up by Rs 2,000, and her statement shows a Rs 2,000 credit from Ali Raza with the same reference.</li>
+      </ol>
+      <div class="payload">
+        <div><div class="ph"><span class="m">GET</span>/api/users/lookup?username=sara</div><pre><span class="c">no body · Authorization: Bearer &lt;token&gt;</span></pre></div>
+        <div><div class="ph">Response<span class="s pill ok">200</span></div><pre>{"username": "sara", "full_name": "Sara Khan",
+ "is_self": false, "paid_before": true}</pre></div>
+      </div>
+      <p style="margin-top:6px;font-size:14.5px">Deliberately minimal: no user id, no wallet id, no balance. <code>paid_before</code> feeds the risk engine (first payment to someone new is riskier).</p>
+      <div class="payload">
+        <div><div class="ph"><span class="m">POST</span>/api/transfers</div><pre><span class="c">Idempotency-Key: 98923c89-b391-4e23-a46c-420f63bc81fb</span>
+{
+  "to_username": "sara",
+  "amount": 200000,
+  "note": "Rent share",
+  "tpin": "482915"
+}</pre></div>
+        <div><div class="ph">Response<span class="s pill ok">201</span></div><pre>{
+  "id": "f129cbb2-…-420f63bc81fb",
+  "ref": "TXC8F1A73F76",
+  "status": "completed",
+  "reason": null,
+  "amount": 200000,
+  "note": "Rent share",
+  "balance_after": 24720000,
+  "counterparty": {"username": "sara",
+                   "full_name": "Sara Khan"}
+}</pre></div>
+      </div>
+      <dl class="fields">
+        <dt>Idempotency-Key</dt><dd>A fresh UUID per reviewed transfer (W6). If the same request arrives again, the server returns this same response instead of paying again.</dd>
+        <dt>amount</dt><dd>200000 paisa = Rs 2,000. Must be a strict integer, 1 to 50,000,000 (Rs 500,000).</dd>
+        <dt>tpin</dt><dd>Checked first, before anything else (W11). Not part of the idempotency hash, never logged.</dd>
+        <dt>note</dt><dd>Stored encrypted (<code>enc:v1:…</code>) in the database (W12), returned as plaintext.</dd>
+        <dt>ref / status</dt><dd>Transaction reference; <code>completed</code> or <code>failed</code> (insufficient funds is recorded as failed, nothing moves).</dd>
+        <dt>balance_after</dt><dd>Sender's new balance: 24,920,000 − 200,000 = 24,720,000 paisa.</dd>
+      </dl>
+      <div class="say"><b>Say</b><q>This is the brief's own example, Ali sends Rs 2,000 to Sara. Look at the trace: the token is verified with the ECDSA maths, the PIN is checked against its argon2id hash, the idempotency key is new, the amount is validated, risk is LOW, and then one database function locks both wallets, debits Ali and credits Sara in a single transaction. The receiver's balance shows as hidden because row-level security stops Ali seeing it, even here.</q></div>
+    </div>
+  </article>
+
+  <!-- Scene D -->
+  <article class="scene">
+    <header><span class="num">D</span><h3>Passkey step-up: Rs 75,000 to Hina</h3><span class="dur">~2.5 min</span><span class="who b">Burhan</span></header>
+    <div class="body">
+      <ol class="steps">
+        <li><span class="click">Security</span> → <span class="click">Add a passkey</span>. Approve with Windows Hello (or the virtual authenticator).</li>
+        <li><span class="click">Send money</span> → <code>hina</code> → <code>75,000</code> → Review → PIN <code>482915</code> → Send. The request returns <b>202</b>; the “Approve with your passkey” dialog opens. <b>Nothing has moved yet.</b></li>
+        <li>Click <span class="click">Approve transfer</span>, verify on the device. Counterfoil: PAID.</li>
+        <li>Trace: open <code>POST /api/transfers/{id}/confirm</code>: challenge recomputed, clientDataJSON checks, authenticatorData byte map (rpIdHash, flags UP=1 UV=1, signCount), ECDSA verify <code>x mod n == r ✓</code>, checklist, atomic transfer.</li>
+      </ol>
+      <div class="payload">
+        <div><div class="ph"><span class="m">POST</span>/api/transfers</div><pre>{"to_username": "hina", "amount": 7500000,
+ "tpin": "482915"}</pre></div>
+        <div><div class="ph">Response<span class="s pill warn">202</span></div><pre>{
+  "status": "awaiting_passkey",
+  "pending_id": "500c4ec3-…-2da2dc84c485",
+  "risk": {"level": "MEDIUM",
+           "signals": ["amount above Rs 50,000"]},
+  "amount": 7500000,
+  "counterparty": {"username": "hina", …},
+  "expires_at": "2026-10-12T10:53:50Z",
+  "options": {
+    "challenge": "-oggiIll3pkfFd5Eey1Ppw…",
+    "rpId": "localhost",
+    "allowCredentials": [{"id": "H9KzCj42…",
+                          "type": "public-key"}],
+    "userVerification": "required",
+    "timeout": 120000
+  }
+}</pre></div>
+      </div>
+      <dl class="fields">
+        <dt>202</dt><dd>Accepted but on hold. The transfer is stored as pending; no money moves until the device signs.</dd>
+        <dt>risk</dt><dd>Over Rs 50,000, or a first payment over Rs 10,000 to someone new → MEDIUM → passkey needed.</dd>
+        <dt>challenge</dt><dd><code>SHA-256(16-byte nonce ‖ canonical transfer {pending_id, from, to, amount, note, exp})</code>. The signature therefore approves <b>this amount to this person</b>, once, within 5 minutes.</dd>
+        <dt>rpId / userVerification</dt><dd>Key is scoped to <code>localhost</code> (a phishing site gets a different rpId hash); fingerprint/face/PIN required on the device.</dd>
+      </dl>
+      <div class="payload">
+        <div><div class="ph"><span class="m">POST</span>/api/transfers/{pending_id}/confirm</div><pre>{"credential": {
+  "id": "H9KzCj42KpNLR8dx2DanoA",
+  "type": "public-key",
+  "response": {
+    "clientDataJSON": "eyJ0eXBlIjog…",
+    "authenticatorData": "SZYN5YgOjGh0…",
+    "signature": "MEUCIQD…"
+  }
+}}</pre></div>
+        <div><div class="ph">Response<span class="s pill ok">201</span></div><pre>{"ref": "TX7ED4D15A97", "status": "completed",
+ "amount": 7500000, "balance_after": 17220000,
+ "counterparty": {"username": "hina", …}}
+
+<span class="c">same confirm sent again →</span>
+<span class="k">409</span> {"detail": "This transfer was already handled."}</pre></div>
+      </div>
+      <dl class="fields">
+        <dt>clientDataJSON</dt><dd>Written by the browser: <code>type: webauthn.get</code>, the challenge, and the real <b>origin</b> (<code>http://localhost:8080</code>). Server checks all three.</dd>
+        <dt>authenticatorData</dt><dd>37 bytes: rpIdHash (32) = SHA-256("localhost") · flags (1): UP=1 UV=1 · signCount (4), which must increase (clone detection).</dd>
+        <dt>signature</dt><dd>ECDSA P-256 over <code>authenticatorData ‖ SHA-256(clientDataJSON)</code>, verified with the public key stored at registration. The private key never leaves the device.</dd>
+      </dl>
+      <div class="say"><b>Say</b><q>A stolen password or session can't move this money. The server holds the transfer and sends a challenge that is a hash of this exact transfer. My device signs it after I verify with my fingerprint. The server recomputes the challenge from its own copy, checks the origin, the rpId hash, the user-verified flag and the counter, and verifies the ECDSA signature. Replaying the approval fails with 409 because it is single-use.</q></div>
+    </div>
+  </article>
+
+  <!-- Scene E -->
+  <article class="scene">
+    <header><span class="num">E</span><h3>Statement, voucher, Security, sign out</h3><span class="dur">~1.5 min</span><span class="who b">Burhan</span></header>
+    <div class="body">
+      <ol class="steps">
+        <li><span class="click">Activity</span>: the bank statement. Month sections with brought/carried forward; Debit · Credit · Balance. This covers the brief's history requirement: sender, receiver, amount, date/time, status.</li>
+        <li>Click a row: the <b>voucher</b> with amount in figures and words and a PAID stamp.</li>
+        <li><span class="click">Security</span>: endorsements; Transaction PIN (set/change needs the password); Passkeys; Sessions (idle limit, “Sign out of all devices”).</li>
+        <li>Optional: avatar → <span class="click">Sign out</span>. In the trace, <code>POST /api/auth/logout</code> shows <i>Revoke session</i>: the token's <code>jti</code> goes on the revocation list and the server-side session and refresh cookie are ended, so a copy of the token stops working at once.</li>
+      </ol>
+      <div class="say"><b>Say</b><q>Every transaction appears on both sides with a running balance, and failed ones are shown struck through as not posted, so the history requirement is fully covered.</q></div>
+    </div>
+  </article>
+</section>
+
+<!-- ================================================================ LAB -->
+<section id="lab">
+  <h2><span class="n">07</span>Security Lab script</h2>
+  <p class="sub">Signed in as <b>ali</b>, presenter tools on → <b>Security lab</b>. For each card: <b>switch OFF → Run attack</b> (red “Before”) → <b>switch ON → Run attack</b> (green “After”). This is the brief's <i>Weakness → Demonstration → Control → Retest</i>.</p>
+  <div class="note warn"><b>Order matters</b>Do W3 near the end of your Lab time (it locks Hina for a minute), and W13 <b>last</b>: its “after” run ends your session on purpose. W1 and W5 switches change the real database (RLS on/off, a CHECK constraint dropped/re-added).</div>
+  <div class="tw"><table>
+    <thead><tr><th>#</th><th>Card</th><th>Switch</th><th>Before (OFF)</th><th>After (ON)</th><th>Say</th></tr></thead>
+    <tbody>
+      <tr><td class="id">W1</td><td>Reading another customer's wallet (BOLA / IDOR)</td><td>both: “Ownership filter” and “Row-level security”</td><td class="res"><span class="pill bad">200</span> “@sara's balance is Rs …”</td><td class="res"><span class="pill ok">404</span> Wallet not found</td><td><b>Do it twice:</b> turn off only the API filter first → still 404, RLS alone blocks it. Then both off → leak. “Logged in is not the same as allowed.” Also show the address-bar version: paste the URL from the card.</td></tr>
+      <tr><td class="id">W2</td><td>Readable passwords in the database</td><td>argon2id password hashing</td><td class="res"><span class="pill bad">plain$open-sesame-2026</span></td><td class="res"><span class="pill ok">$argon2id$v=19$m=65536,t=3,p=2$…</span></td><td>“A database dump shows only salted, memory-hard hashes.”</td></tr>
+      <tr><td class="id">W4</td><td>Forged session token</td><td>Token signature verification</td><td class="res"><span class="pill bad">200</span> signed in as @sara</td><td class="res"><span class="pill ok">401</span></td><td>“Same signature, edited payload: the ECDSA check fails. Trust begins after verification.”</td></tr>
+      <tr><td class="id">W5</td><td>Negative amount transfer</td><td>Amount validation</td><td class="res"><span class="pill bad">201</span> Ali's balance goes UP</td><td class="res"><span class="pill ok">422</span></td><td>“Sending minus 5,000 would pull money out of Sara. Checked in the schema, the API and inside the database.”</td></tr>
+      <tr><td class="id">W6</td><td>Replayed / double-submitted transfer</td><td>Idempotency keys</td><td class="res"><span class="pill bad">charged 5 times</span></td><td class="res"><span class="pill ok">charged once</span></td><td>“Five identical requests at once, one debit, one reference.”</td></tr>
+      <tr><td class="id">W7</td><td>Race condition on balances</td><td>Atomic transfer with row locks</td><td class="res"><span class="pill bad">balance fell less than recorded</span></td><td class="res"><span class="pill ok">consistent</span></td><td>“Ten parallel transfers. Without locks they overwrite each other; the auditor's reconciliation then shows MISMATCH.”</td></tr>
+      <tr><td class="id">W8</td><td>Large transfer with only a stolen session</td><td>Passkey step-up</td><td class="res"><span class="pill bad">201</span> Rs 60,000 left</td><td class="res"><span class="pill ok">202 held</span> (or 403 if no passkey)</td><td>“Big money needs the device.”</td></tr>
+      <tr><td class="id">W9</td><td>Customer reaching the audit desk</td><td>Role-based access</td><td class="res"><span class="pill bad">/audit 200</span>, reconcile still 403</td><td class="res"><span class="pill ok">403</span></td><td>“Even with the API check off, the database function refuses: defence in depth.”</td></tr>
+      <tr><td class="id">W11</td><td>Transfer with a stolen session but no PIN</td><td>Transaction PIN</td><td class="res"><span class="pill bad">201</span> Rs 1,000 sent</td><td class="res"><span class="pill ok">403</span> enter your PIN</td><td>“The PIN is a second secret the session doesn't carry.”</td></tr>
+      <tr><td class="id">W12</td><td>Reading the database directly</td><td>Encryption at rest</td><td class="res"><span class="pill bad">“Probe Person”</span> as text</td><td class="res"><span class="pill ok">enc:v1:hXJ_b447…</span></td><td>“Same row, same app view, but the stored value is AES-256-GCM ciphertext.”</td></tr>
+      <tr><td class="id">W3</td><td>Password guessing (credential stuffing)</td><td>Login throttling & lockout</td><td class="res"><span class="pill bad">… 200</span> password found</td><td class="res"><span class="pill ok">429</span> real password refused while locked</td><td>“Per account, not just per IP, because botnets rotate IPs (Lecture 1, slide 17).”</td></tr>
+      <tr><td class="id">W13</td><td>Unattended session left signed in</td><td>Inactivity timeout + “Demo idle limit” 15 s</td><td class="res"><span class="pill bad">200</span> after 18 s idle</td><td class="res"><span class="pill ok">401 session_idle</span>, signed out</td><td>Set the limit to 15 seconds first. With the switch ON, stop touching the mouse: “Are you still there?” appears, then the app signs out with the reason.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note ok"><b>After the Lab</b>Set the demo idle limit back to 5 minutes, or press Reset demo data (signs you out, restores all switches and balances).</div>
+</section>
+
+<!-- ================================================================ TRACE -->
+<section id="trace">
+  <h2><span class="n">08</span>Reading the security trace</h2>
+  <p class="sub">The 16 real steps of one ordinary transfer. Point at the bold names; the grey line is what to say. Each step also has an <b>Explain</b> button and timing.</p>
+  <ol class="trace">
+    <li><span class="no">1</span><span class="lane API">API</span><span class="ly">L1</span><span><b>Extract bearer token</b><i>Authorization: Bearer … must be present, else 401.</i></span></li>
+    <li><span class="no">2</span><span class="lane API">API</span><span class="ly">L1</span><span><b>Parse JWT (decode only)</b><i>Base64 decoding is not validation; nothing is trusted yet.</i></span></li>
+    <li><span class="no">3</span><span class="lane API">API</span><span class="ly">L1</span><span><b>Verify ES256 signature</b><i>w = s⁻¹ mod n, u₁ = z·w, u₂ = r·w, X = u₁G + u₂Q → x mod n == r ✓</i></span></li>
+    <li><span class="no">4</span><span class="lane API">API</span><span class="ly">L1</span><span><b>Validate claims</b><i>iss, aud, nbf, exp with real timestamps.</i></span></li>
+    <li><span class="no">5</span><span class="lane API">API</span><span class="ly">L1</span><span><b>Check token revocation list</b><i>jti not revoked by a logout.</i></span></li>
+    <li><span class="no">6</span><span class="lane API">API</span><span class="ly">L1</span><span><b>Check server-side session</b><i>Idle for N s, limit 300 s (W13).</i></span></li>
+    <li><span class="no">7</span><span class="lane API">API</span><span class="ly">L2</span><span><b>Authorize: scope transfer:write</b><i>Signed in is not enough; the scope must allow it (W9).</i></span></li>
+    <li><span class="no">8</span><span class="lane Database">Database</span><span class="ly">L3</span><span><b>Bind request identity for RLS</b><i>SET LOCAL app.user_id = '…' as role wallet_app (W1).</i></span></li>
+    <li><span class="no">9</span><span class="lane API">API</span><span class="ly">L1</span><span><b>Verify transaction PIN with argon2id</b><i>Never shown, never logged (W11).</i></span></li>
+    <li><span class="no">10</span><span class="lane Database">Database</span><span class="ly">L3</span><span><b>Bind request identity for RLS</b><i>Second DB transaction for the transfer itself.</i></span></li>
+    <li><span class="no">11</span><span class="lane Database">Database</span><span class="ly">L2</span><span><b>Idempotency-Key lookup: new request</b><i>Key and request hash recorded (W6).</i></span></li>
+    <li><span class="no">12</span><span class="lane API">API</span><span class="ly">L2</span><span><b>Validate the request on the server</b><i>Integer paisa, 1 to 50,000,000, real customer, not yourself (W5).</i></span></li>
+    <li><span class="no">13</span><span class="lane API">API</span><span class="ly">L2</span><span><b>Risk engine → LOW</b><i>Below Rs 50,000 and payee known → no passkey (W8).</i></span></li>
+    <li><span class="no">14</span><span class="lane Database">Database</span><span class="ly">L3</span><span><b>Atomic transfer in one DB transaction</b><i>BEGIN; lock both rows in fixed order; debit; credit; INSERT; COMMIT (W7).</i></span></li>
+    <li><span class="no">15</span><span class="lane API">API</span><span class="ly">L3</span><span><b>Decrypt users.full_name</b><i>AES-256-GCM tag verified (W12).</i></span></li>
+    <li><span class="no">16</span><span class="lane Database">Database</span><span class="ly">L5</span><span><b>Audit: transfer.create → success</b><i>Append-only row, secrets redacted, detail encrypted (W10).</i></span></li>
+  </ol>
+  <div class="note"><b>Panel features to mention</b>Requests are grouped by the action that caused them (filter at the top: one action, all transfers, all lab attacks) · each request shows its send time, round-trip and the components it touched · <b>Step through</b> reveals steps one at a time with <span class="kbd">→</span> · <b>Markdown</b> copies the trace as evidence. With <code>DEMO_MODE=false</code> none of this exists.</div>
+</section>
+
+<!-- ================================================================ PAYLOADS -->
+<section id="payloads">
+  <h2><span class="n">09</span>Payload reference</h2>
+  <p class="sub">Every rejection the examiner might trigger, captured from the running app. Bodies are flat JSON: <code>detail</code> is the message, <code>code</code> the machine reason.</p>
+
+  <h3>Transaction PIN (W11)</h3>
+  <div class="payload">
+    <div><div class="ph"><span class="m">POST</span>/api/transfers · no tpin</div><pre>{"to_username": "hina", "amount": 100000}</pre></div>
+    <div><div class="ph">Response<span class="s pill bad">403</span></div><pre>{"detail": "Enter your transaction PIN to send money.",
+ "code": "tpin_missing"}</pre></div>
+  </div>
+  <div class="payload" style="margin-top:8px">
+    <div><div class="ph"><span class="m">POST</span>/api/transfers · wrong PIN</div><pre>{"to_username": "hina", "amount": 100000,
+ "tpin": "111222"}</pre></div>
+    <div><div class="ph">Response<span class="s pill bad">403</span> → 3rd time <span class="pill bad">423</span></div><pre>{"detail": "Incorrect transaction PIN. 2 attempts left.",
+ "code": "tpin_wrong", "attempts_left": 2}
+
+<span class="c">third wrong PIN (Retry-After: 900)</span>
+{"detail": "Too many wrong PINs. Transfers are locked for 15 minutes.",
+ "code": "tpin_locked", "retry_after": 900}</pre></div>
+  </div>
+  <p style="font-size:14.5px;margin-top:6px">No PIN set at all (a new account): <code>403 {"code": "tpin_required"}</code>, “Set a transaction PIN in Security before sending money.”</p>
+
+  <h3>Idempotency (W6)</h3>
+  <div class="payload">
+    <div><div class="ph"><span class="m">POST</span>/api/transfers · same key, same body again</div><pre><span class="c">Idempotency-Key: 98923c89-…</span>  (unchanged)</pre></div>
+    <div><div class="ph">Response<span class="s pill ok">201</span></div><pre><span class="c">Idempotent-Replayed: true</span>
+{"ref": "TXC8F1A73F76", … identical to the first response}</pre></div>
+  </div>
+  <div class="payload" style="margin-top:8px">
+    <div><div class="ph"><span class="m">POST</span>/api/transfers · same key, different amount</div><pre>{"to_username": "sara", "amount": 999, …}</pre></div>
+    <div><div class="ph">Response<span class="s pill bad">409</span></div><pre>{"detail": "This request conflicts with an earlier one.
+            Start a new transfer."}</pre></div>
+  </div>
+
+  <h3>Input validation (W5)</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Body sent</th><th>Status</th><th>Response</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">"amount": -500000</td><td><span class="pill bad">422</span></td><td class="mono">{"detail": "Enter an amount between Rs 0.01 and Rs 500,000."}</td></tr>
+      <tr><td class="mono">"amount": 1.5</td><td><span class="pill bad">422</span></td><td class="mono">{"detail": "amount: Input should be a valid integer", "field": "amount"}</td></tr>
+      <tr><td class="mono">… "balance": 1000000000</td><td><span class="pill bad">422</span></td><td class="mono">{"detail": "balance: Extra inputs are not permitted", "field": "balance"}</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Access control (W1, W4, W9)</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Request</th><th>Status</th><th>Response</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">GET /api/wallets/{sara's id} as ali</td><td><span class="pill bad">404</span></td><td class="mono">{"detail": "Wallet not found."}</td><td>RLS returns 0 rows; 404 not 403 so ids can't be enumerated</td></tr>
+      <tr><td class="mono">GET /api/me with sub edited to sara</td><td><span class="pill bad">401</span></td><td class="mono">{"detail": "Your session is no longer valid. Please sign in again."}</td><td>ES256 signature no longer matches</td></tr>
+      <tr><td class="mono">GET /api/audit as ali</td><td><span class="pill bad">403</span></td><td class="mono">{"detail": "This area is restricted to the audit team."}</td><td>customer token lacks the auditor role</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Brute force (W3) and inactivity (W13)</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Request</th><th>Status</th><th>Response</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">POST /api/auth/login, wrong password (1st–5th)</td><td><span class="pill bad">401</span></td><td class="mono">{"detail": "Incorrect username or password."}  <span class="c">same text whether or not the user exists</span></td></tr>
+      <tr><td class="mono">6th attempt</td><td><span class="pill bad">429</span></td><td class="mono">Retry-After: 60 · {"detail": "Too many failed attempts. Try again in 60 seconds."}</td></tr>
+      <tr><td class="mono">GET /api/me after 17 s idle (15 s demo limit)</td><td><span class="pill bad">401</span></td><td class="mono">{"detail": "You were signed out after 15 seconds of inactivity.", "code": "session_idle"}</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Encryption at rest (W12): what the database actually holds</h3>
+  <pre>users        username = sara
+             full_name = enc:v1:rr1R700XMN7wlpyw5…uYvD6LiJIyCQ        <span class="c">← AES-256-GCM, AAD "users.full_name:&lt;id&gt;"</span>
+             password_hash = $argon2id$v=19$m=65536,t=3,p=2$…      <span class="c">← W2</span>
+transactions ref = TXC8F1A73F76, amount = 200000                   <span class="c">← amounts stay plain: SQL must add and lock them</span>
+             note = enc:v1:oU9rMzZXa2ZePO89k…lJsBPA7B20QE</pre>
+  <dl class="fields">
+    <dt>enc:v1:</dt><dd>Format marker and key id (<code>v1</code>), so keys can be rotated later.</dd>
+    <dt>body</dt><dd>base64url( 12-byte random nonce ‖ ciphertext ‖ 16-byte GCM tag ). Any tampered byte fails the tag.</dd>
+    <dt>AAD</dt><dd>Binds the value to its column and row: a ciphertext pasted into another row fails to decrypt.</dd>
+    <dt>key</dt><dd>32 random bytes in the Docker keys volume, outside the database, so a DB dump alone is useless.</dd>
+  </dl>
+
+  <h3>Auditor reconciliation (W7, W9)</h3>
+  <div class="payload">
+    <div><div class="ph"><span class="m">GET</span>/api/audit/reconcile · as auditor</div><pre><span class="c">no body · Authorization: Bearer &lt;token&gt;</span></pre></div>
+    <div><div class="ph">Response<span class="s pill ok">200</span></div><pre>{"ok": true,
+ "total_balances": 1000000000, "total_supply": 1000000000,
+ "items": [
+  {"username": "treasury", "balance": 964700000, "expected": 964700000, "ok": true},
+  {"username": "ali", "balance": 17220000, "expected": 17220000, "ok": true},
+  …]}</pre></div>
+  </div>
+  <p style="font-size:14.5px;margin-top:6px">Every wallet must equal received − sent from the ledger, and all balances must add up to the total supply (Rs 10,000,000). After the W7 attack with locks off, this flips to <b>MISMATCH</b>.</p>
+</section>
+
+<!-- ================================================================ CODES -->
+<section id="codes">
+  <h2><span class="n">10</span>Status codes</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Code</th><th>Meaning in SecureWallet</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill ok">200</span></td><td>Allowed and done</td><td>login, /me, reconcile</td></tr>
+      <tr><td><span class="pill ok">201</span></td><td>Created: money moved</td><td>transfer completed, passkey saved</td></tr>
+      <tr><td><span class="pill warn">202</span></td><td>Accepted, on hold, nothing moved</td><td>transfer waiting for passkey</td></tr>
+      <tr><td><span class="pill bad">400</span></td><td>Malformed or failed verification</td><td>bad passkey assertion</td></tr>
+      <tr><td><span class="pill bad">401</span></td><td>Not authenticated: who are you?</td><td>bad password, forged/revoked token, idle session</td></tr>
+      <tr><td><span class="pill bad">403</span></td><td>Authenticated but not allowed</td><td>customer → audit, missing/wrong PIN</td></tr>
+      <tr><td><span class="pill bad">404</span></td><td>Not found or not yours (same answer on purpose)</td><td>BOLA attempt</td></tr>
+      <tr><td><span class="pill bad">409</span></td><td>Conflict / already handled</td><td>idempotency mismatch, confirm replay</td></tr>
+      <tr><td><span class="pill bad">422</span></td><td>Validation or business rule failed, no money moved</td><td>negative amount, insufficient funds</td></tr>
+      <tr><td><span class="pill bad">423</span></td><td>Locked</td><td>PIN locked after 3 wrong</td></tr>
+      <tr><td><span class="pill bad">429</span></td><td>Too many attempts</td><td>login throttled / account locked</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ================================================================ Q&A -->
+<section id="qa">
+  <h2><span class="n">11</span>Examiner questions</h2>
+  <p class="sub">Short, confident answers. Click to open.</p>
+  <details class="qa"><summary>Why row-level security instead of just checking ownership in the code?</summary><div>An ownership check has to be remembered on every endpoint; forgetting one is exactly how BOLA happens. RLS is enforced by PostgreSQL on every query from the app role, so a missing WHERE clause can't leak data. We kept the API filter too, as a second layer; the Lab shows that with the API filter off, RLS still returns 404.</div></details>
+  <details class="qa"><summary>Doesn't SECURITY DEFINER bypass RLS? Isn't that dangerous?</summary><div>It runs as the table owner, which is why it can credit the receiver's wallet that RLS hides from the sender. To keep it safe it takes the sender from <code>app_uid()</code>, not from a parameter, re-validates the amount, and has a fixed <code>search_path</code>. It's the only path that can change a balance; the app role has no UPDATE on wallets.</div></details>
+  <details class="qa"><summary>Why argon2id and not SHA-256 or bcrypt?</summary><div>SHA-256 is fast, so a leaked hash can be brute-forced quickly. argon2id is salted and memory-hard (64 MiB per guess), which makes GPU cracking expensive. It's the current OWASP recommendation; bcrypt is acceptable but not memory-hard.</div></details>
+  <details class="qa"><summary>Where is the token stored and why not localStorage?</summary><div>The access token lives only in a JavaScript variable (lost on reload), so XSS can't read it from storage. The session survives reloads through an HttpOnly, SameSite=Strict refresh cookie that scripts can't read and other sites can't send. The CSP (script-src 'self') adds another barrier against XSS.</div></details>
+  <details class="qa"><summary>What stops someone replaying a captured passkey approval?</summary><div>The challenge is random, single-use, bound to one pending transfer and expires after 5 minutes. A second confirm returns 409. The signature counter must also increase, which detects cloned authenticators.</div></details>
+  <details class="qa"><summary>How is a phishing site stopped by passkeys?</summary><div>The browser writes the real origin into clientDataJSON and the authenticator scopes the key to the rpId (its hash is inside authenticatorData). A fake site has a different origin and rpId hash, so the server rejects it; the user has no secret to type into a fake page.</div></details>
+  <details class="qa"><summary>Why both a transaction PIN and a passkey?</summary><div>Different risks. The PIN (W11) is on every transfer, so a session left open or a stolen token can't pay even small amounts. The passkey (W8) is the stronger, phishing-resistant factor for large or first-time-payee transfers. Layered: session → PIN → passkey above the limit.</div></details>
+  <details class="qa"><summary>Why aren't balances encrypted?</summary><div>The database has to add them up, compare them and lock them inside transfer_funds() and reconcile_ledger(); encrypted numbers can't be summed in SQL. Balances are protected by RLS and least-privilege grants instead. We encrypt what doesn't need SQL arithmetic: names, notes, audit details.</div></details>
+  <details class="qa"><summary>What if the encryption key is stolen?</summary><div>Then encrypted columns can be read; that's why the key lives in a separate volume, not in the database or the image. In production we'd use a KMS/HSM with envelope encryption and rotation; the <code>v1</code> key id in every value supports that. We list this as a limitation.</div></details>
+  <details class="qa"><summary>What if the session cookie is stolen?</summary><div>HttpOnly means page scripts can't read it, SameSite stops other sites using it, it rotates on every use with reuse detection that revokes the whole session, and the idle timeout limits how long it's useful. A copied cookie replayed directly would still work until one of those triggers; device binding (DPoP) is our planned fix. We were open about this in the report's limitations.</div></details>
+  <details class="qa"><summary>Is a 6-digit PIN strong enough?</summary><div>Online, yes: three wrong entries lock transfers for 15 minutes, so guessing is impossible in practice. Offline, if the hashes were stolen, one million combinations is small even with argon2id, which is why the PIN is a second factor, never the only one.</div></details>
+  <details class="qa"><summary>How do you prevent double-spending with parallel requests?</summary><div>Inside transfer_funds() both wallet rows are locked with SELECT … FOR UPDATE in a fixed order (by user id, so A→B and B→A can't deadlock), balances are re-read under the lock, then debit, credit and the transaction row are written in one database transaction. The W7 lab shows the lost update without locks, and reconciliation catches it.</div></details>
+  <details class="qa"><summary>How do you know the controls actually work?</summary><div>39 automated end-to-end tests run against the Docker stack, each weakness tested before (control off, attack succeeds) and after (control on, attack blocked), plus the live Lab and the reconciliation report.</div></details>
+  <details class="qa"><summary>Isn't the Security Lab itself a vulnerability?</summary><div>It only exists when DEMO_MODE=true. With the default false, the lab and trace endpoints aren't mounted at all (we tested this: 404), every toggle is audited, and Reset restores every control. Secure default.</div></details>
+  <details class="qa"><summary>Why 404 instead of 403 for another user's wallet?</summary><div>A 403 would confirm that the wallet exists. 404 gives the same answer for “doesn't exist” and “not yours”, so ids can't be enumerated.</div></details>
+</section>
+
+<!-- ================================================================ LIMITS -->
+<section id="limits">
+  <h2><span class="n">12</span>Limitations (say them before they're asked)</h2>
+  <ul class="tight">
+    <li><b>No TLS locally.</b> Browser↔nginx is HTTP on localhost (WebAuthn allows localhost). Production: TLS 1.3 at nginx.</li>
+    <li><b>Stolen session cookie</b> analysed, not demonstrated; device binding (DPoP) planned.</li>
+    <li><b>Keys in a Docker volume</b>, not a KMS/HSM.</li>
+    <li><b>In-memory IP limiter</b>: needs Redis with several API instances (the account lockout is already in the DB).</li>
+    <li><b>Seeded money only</b>: no bank top-up; that would need signed, replay-protected callbacks.</li>
+    <li><b>Simple risk rules</b>: amount and new payee only; velocity and device signals are next.</li>
+  </ul>
+</section>
+
+<!-- ================================================================ RESCUE -->
+<section id="rescue">
+  <h2><span class="n">13</span>If something breaks</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Symptom</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>Page won't load / 502</td><td>Docker Desktop running? <code>docker compose up -d</code>, wait 20 s, reload.</td></tr>
+      <tr><td>“Too many failed attempts”</td><td>You (or W3) locked the account. Wait 60 s or use another account; Reset demo data clears it.</td></tr>
+      <tr><td>“Transfers are locked for 15 minutes”</td><td>Three wrong PINs. Use another customer, or Reset demo data.</td></tr>
+      <tr><td>Signed out unexpectedly</td><td>Idle limit still at 15 s from W13. Set it back to 5 minutes in the W13 card.</td></tr>
+      <tr><td>Passkey prompt fails</td><td>Use <code>localhost</code>, not 127.0.0.1. Enable Chrome's virtual authenticator (DevTools → WebAuthn).</td></tr>
+      <tr><td>“Add a passkey to send this amount”</td><td>Register one in Security first, or use an amount under Rs 50,000.</td></tr>
+      <tr><td>Lab result not what you expect</td><td>Check the switch state; another switch may still be off. Reset demo data restores all 13.</td></tr>
+      <tr><td>Trace panel missing</td><td><span class="kbd">Ctrl</span>+<span class="kbd">Shift</span>+<span class="kbd">D</span>; only works when the server runs with DEMO_MODE=true.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>SecureWallet · CY-5004 Assignment 1 · Israr Ahmed (26I-7722) and Burhan Ud Din (26I-7711). Payloads in this guide were captured from the running application.</footer>
+</main>
+</div>
+
+<script>
+// Checklist ticks are remembered in this browser only.
+document.querySelectorAll('#checklist input').forEach(cb => {
+  try { cb.checked = localStorage.getItem('sw-demo-' + cb.id) === '1' } catch (e) {}
+  cb.addEventListener('change', () => { try { localStorage.setItem('sw-demo-' + cb.id, cb.checked ? '1' : '0') } catch (e) {} })
+})
+// Highlight the current section in the contents.
+const links = [...document.querySelectorAll('.toc a')]
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id))
+  })
+}, { rootMargin: '-20% 0px -70% 0px' })
+document.querySelectorAll('main section').forEach(s => obs.observe(s))
+</script>
+</body>
+</html>

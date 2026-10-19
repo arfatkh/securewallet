@@ -1,0 +1,4 @@
+# shell scripts run on Linux (VM, containers): always LF
+*.sh text eol=lf
+Caddyfile text eol=lf
+*.conf text eol=lf

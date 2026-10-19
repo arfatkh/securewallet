@@ -1,0 +1,297 @@
+/* Send money as writing a cheque. Recipient and amount fill in the leaf, the review is the
+   completed cheque signed with the transaction PIN, the receipt is the torn-off counterfoil.
+   Shared primitives (pb-sheet, pb-field, pb-stamp, pb-flag, pb-words) live in passbook.css. */
+
+.send { display: grid; gap: 22px; max-width: 880px; --send-chq-paper: color-mix(in srgb, var(--accent-soft) 32%, var(--surface)); --send-chq-line: color-mix(in srgb, var(--ink) 38%, transparent); }
+.send-stage { display: grid; gap: 16px; min-width: 0; }
+
+/* ------------------------------------------------ progress strip */
+.send-steps {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule-2);
+}
+.send-steps li {
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+  padding: 10px 12px; color: var(--muted); position: relative;
+}
+.send-steps li + li { border-left: 1px solid var(--rule); }
+.send-step-n {
+  flex: none; display: inline-grid; place-items: center; min-width: 24px; height: 22px;
+  font: 600 12px/1 var(--mono); letter-spacing: .04em; color: var(--faint);
+}
+.send-step-l { font: 600 10.5px/1.2 var(--font); letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.send-steps li.on { color: var(--ink); }
+.send-steps li.on .send-step-n { color: var(--accent); }
+.send-steps li.on::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--accent); }
+.send-steps li.done { color: var(--ink-2); }
+.send-steps li.done .send-step-n { color: var(--ok); }
+
+/* ------------------------------------------------ step heading */
+.send-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.send-h { font-family: var(--display); font-weight: 540; font-size: 26px; letter-spacing: -0.01em; color: var(--ink); margin: 0 0 2px; }
+.send-head .pb-hint { font-size: 14px; }
+.send-back { flex: none; }
+
+/* ------------------------------------------------ the cheque leaf */
+.send-chq {
+  display: grid; gap: 14px; min-width: 0;
+  background: var(--send-chq-paper); color: var(--ink);
+  border: 1px solid var(--rule-2); border-radius: var(--r-lg); box-shadow: var(--shadow);
+  padding: 20px 26px 0; overflow: hidden;
+}
+.send-chq-top { display: flex; align-items: flex-start; gap: 12px 20px; flex-wrap: wrap; padding-bottom: 4px; }
+.send-chq-bank { display: grid; gap: 2px; min-width: 0; }
+.send-chq-bank-name { font-family: var(--display); font-weight: 560; font-size: 20px; letter-spacing: -0.01em; line-height: 1.1; }
+.send-chq-bank-sub { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+/* the crossing: two parallel rules with "A/C payee only" between them */
+.send-chq-cross {
+  align-self: center; margin: 4px 0 0 8px; padding: 2px 12px;
+  border-top: 1.5px solid var(--ink-2); border-bottom: 1.5px solid var(--ink-2);
+  font: 600 10px/1.5 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2);
+  transform: rotate(-9deg); white-space: nowrap;
+}
+.send-chq-date { margin-left: auto; display: grid; justify-items: end; gap: 4px; }
+.send-chq-date-boxes { display: flex; gap: 6px; }
+.send-chq-date-g { display: flex; }
+.send-chq-date-g > span {
+  width: 18px; height: 24px; display: grid; place-items: center;
+  border: 1px solid var(--rule-2); background: var(--surface);
+  font-size: 13px; font-weight: 600; color: var(--ink);
+}
+.send-chq-date-g > span + span { border-left: 0; }
+
+/* a written line: printed label, then whatever is written on the rule */
+.send-chq-line {
+  display: grid; grid-template-columns: 68px minmax(0, 1fr); align-items: end; gap: 10px;
+  min-height: 48px; padding-bottom: 6px; border-bottom: 1px solid var(--send-chq-line);
+  transition: border-color .12s, box-shadow .12s;
+}
+.send-chq-line:focus-within { border-bottom-color: var(--accent); box-shadow: inset 0 -1px 0 var(--accent); }
+.send-chq-k { font: 600 10.5px/1.2 var(--font); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding-bottom: 6px; }
+.send-chq-v { min-width: 0; }
+.send-chq-blank { display: block; height: 24px; }
+.send-chq-placeholder { display: block; font-family: var(--display); font-style: italic; font-size: 15px; color: var(--faint); padding-bottom: 2px; }
+
+.send-chq-input {
+  width: 100%; min-width: 0; border: 0; outline: none; background: none; padding: 4px 0 2px;
+  font-family: var(--display); font-size: 20px; font-weight: 480; color: var(--ink);
+}
+.send-chq-input::placeholder { color: var(--faint); font-style: italic; font-weight: 400; }
+
+/* Pay line */
+.send-find { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.send-at { font-family: var(--display); font-size: 20px; color: var(--muted); }
+.send-find .btn { flex: none; }
+.send-chq-payee { display: flex; align-items: center; gap: 12px; min-width: 0; flex-wrap: wrap; padding-bottom: 2px; }
+.send-chq-payee .avatar { flex: none; }
+.send-chq-payee-text { display: grid; min-width: 0; line-height: 1.25; flex: 1 1 160px; }
+.send-chq-payee-text b { font-family: var(--display); font-weight: 520; font-size: 22px; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.send-chq-payee-text .mono { font-size: 12.5px; color: var(--muted); }
+
+/* Rupees line and the figures box */
+.send-chq-mid { display: grid; grid-template-columns: minmax(0, 1fr) 248px; gap: 22px; align-items: end; }
+.send-chq-words-text { display: block; font-size: 17px; color: var(--ink); padding-bottom: 2px; overflow-wrap: anywhere; }
+.send-chq-words-text.faded { color: var(--faint); }
+.send-chq-fig { display: grid; gap: 6px; min-width: 0; }
+.send-chq-box {
+  display: flex; align-items: baseline; gap: 8px; min-height: 56px; min-width: 0;
+  padding: 8px 12px; background: var(--surface);
+  border: 1.5px solid var(--ink); border-radius: 4px;
+  box-shadow: inset 0 0 0 3px var(--surface), inset 0 0 0 4px var(--rule);
+}
+.send-chq.blank .send-chq-box { border-style: dashed; border-color: var(--rule-2); box-shadow: none; }
+.send-chq-box-cur { font-family: var(--display); font-size: 18px; color: var(--muted); align-self: center; }
+.send-chq-box input, .send-chq-box-num {
+  flex: 1; min-width: 0; width: 100%; border: 0; outline: none; background: none; padding: 0;
+  font-family: var(--display); font-size: 30px; font-weight: 560; line-height: 1.15; letter-spacing: -0.02em;
+  color: var(--ink); font-variant-numeric: tabular-nums lining-nums; text-align: right;
+}
+.send-chq-box input::placeholder { color: var(--rule-2); }
+.send-chq-box-num { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.send-chq-box-end { font-size: 18px; color: var(--muted); margin-left: 2px; }
+.send-chq-box.editable { cursor: text; }
+.send-chq-box.editable:focus-within { border-color: var(--accent); box-shadow: inset 0 0 0 3px var(--surface), inset 0 0 0 4px var(--accent-soft), 0 0 0 3px var(--accent-soft); }
+.send-chq-box.invalid, .send-chq-box.invalid:focus-within { border-color: var(--bad); box-shadow: inset 0 0 0 3px var(--surface), inset 0 0 0 4px var(--bad-soft); }
+.send-chq-fee { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.send-chq-fee .num { color: var(--ink-2); font-weight: 600; }
+
+/* Memo line and the signature */
+.send-chq-foot { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 22px; align-items: end; }
+.send-chq-memo-text { display: block; font-size: 16px; color: var(--ink); padding-bottom: 2px; overflow-wrap: anywhere; }
+.send-chq-memo .send-chq-input { font-size: 17px; }
+.send-chq-sign { display: grid; gap: 4px; justify-items: stretch; text-align: center; min-width: 0; }
+.send-chq-sign-line { display: block; height: 44px; border-bottom: 1px solid var(--send-chq-line); }
+.send-chq-sign-for { font-family: var(--display); font-style: italic; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* T-PIN as the signature */
+.send-pin { display: grid; gap: 4px; justify-items: center; }
+.send-pin-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 600 10.5px/1.3 var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--accent-ink);
+}
+.send-pin-input {
+  width: 100%; padding: 6px 0 6px; border: 0; border-bottom: 1.5px solid var(--ink); border-radius: 0;
+  outline: none; background: transparent; text-align: center; color: var(--ink);
+  font-family: var(--mono); font-size: 24px; font-weight: 600; letter-spacing: .55em; text-indent: .55em;
+  font-variant-numeric: tabular-nums; transition: border-color .12s, background .12s;
+}
+.send-pin-input::placeholder { color: var(--rule-2); }
+.send-pin-input:focus { border-bottom: 2px solid var(--accent); background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.send-pin-input.invalid { border-bottom-color: var(--bad); }
+.send-pin-input:disabled { opacity: .5; cursor: not-allowed; }
+.send-pin-help { text-align: right; }
+.send-nopin { display: grid; justify-items: center; gap: 6px; padding: 8px 0 10px; border-bottom: 1px solid var(--send-chq-line); font-size: 13px; color: var(--muted); }
+
+/* MICR band: the drawer's account at the foot of the leaf */
+.send-chq-micr {
+  display: flex; flex-wrap: wrap; gap: 6px 26px; margin: 6px -26px 0; padding: 11px 26px 12px;
+  border-top: 1px dashed var(--rule-2); background: var(--surface);
+  font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2);
+}
+.send-chq-micr > span { min-width: 0; overflow-wrap: anywhere; }
+.send-chq-micr-k { color: var(--faint); font-size: 10px; margin-right: 8px; }
+
+/* under the cheque on the amount step */
+.send-amount-form { display: grid; gap: 14px; min-width: 0; }
+.send-under { display: flex; justify-content: space-between; align-items: center; gap: 10px 16px; flex-wrap: wrap; }
+.send-balance { font-size: 14.5px; color: var(--muted); }
+.send-balance .num { color: var(--ink); font-weight: 600; }
+.send-quick { display: flex; gap: 8px; flex-wrap: wrap; }
+.send-quick .btn { font-variant-numeric: tabular-nums; }
+.send-amount-err { margin: 0; }
+.send-go { min-height: 52px; font-size: 16px; }
+
+/* ------------------------------------------------ recent payees (slips with a perforated edge) */
+.send-recent-list { display: grid; gap: 8px; }
+.send-person {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center;
+  width: 100%; text-align: left; color: var(--ink); position: relative;
+  padding: 10px 14px 10px 20px; border: 1px solid var(--rule-2); border-left: 0; border-radius: 0 var(--r) var(--r) 0;
+  background: radial-gradient(circle at 0 6px, var(--surface) 3.5px, transparent 4px) 0 0 / 8px 12px repeat-y, var(--surface-2);
+  transition: transform .12s, border-color .12s;
+}
+.send-person::before { content: ""; position: absolute; left: 7px; top: 6px; bottom: 6px; border-left: 1px dashed var(--rule-2); }
+.send-person:hover { transform: translateX(3px); border-color: var(--ink-2); }
+.send-person-text { display: grid; min-width: 0; line-height: 1.3; }
+.send-person-text b { font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.send-person-text .mono { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.send-person-go { font-size: 12.5px; font-weight: 600; color: var(--accent-ink); }
+
+/* ------------------------------------------------ counterfoil (receipt) */
+.send-receipt { justify-items: center; }
+.send-stub {
+  width: min(100%, 580px);
+  filter: drop-shadow(0 1px 1px rgba(60, 45, 20, .08)) drop-shadow(0 10px 20px rgba(60, 45, 20, .10));
+  animation: send-tear .4s cubic-bezier(.2, .9, .3, 1);
+}
+.send-send-stub-paper {
+  --edge: 9px;
+  position: relative; display: grid; gap: 16px;
+  background: var(--surface); padding: calc(var(--edge) + 24px) 28px 22px;
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+  /* punched holes along the torn top edge */
+  -webkit-mask:
+    radial-gradient(circle at 50% 0, transparent 4.5px, #000 5px) top / 13px var(--edge) repeat-x,
+    linear-gradient(#000 0 0) bottom / 100% calc(100% - var(--edge)) no-repeat;
+          mask:
+    radial-gradient(circle at 50% 0, transparent 4.5px, #000 5px) top / 13px var(--edge) repeat-x,
+    linear-gradient(#000 0 0) bottom / 100% calc(100% - var(--edge)) no-repeat;
+}
+.send-send-stub-paper::before { content: ""; position: absolute; left: 14px; right: 14px; top: calc(var(--edge) + 6px); border-top: 1px dashed var(--rule-2); }
+.send-send-stub-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--ink); }
+.send-send-stub-title { font-family: var(--display); font-weight: 540; font-size: 23px; letter-spacing: -0.01em; margin-top: 6px; overflow-wrap: anywhere; }
+.send-send-stub-stamp { flex: none; margin: 2px 4px 0 0; padding: 7px 14px 6px; transform: rotate(-6deg); }
+.send-send-stub-stamp b { font-size: 19px; letter-spacing: .14em; }
+.send-receipt.fail .send-send-stub-stamp { transform: rotate(4deg); }
+
+.send-send-stub-amount { display: grid; gap: 4px; }
+.send-send-stub-fig { display: flex; align-items: baseline; gap: 8px; font-family: var(--display); font-size: clamp(36px, 8vw, 46px); font-weight: 560; letter-spacing: -0.025em; line-height: 1.05; font-variant-numeric: tabular-nums lining-nums; }
+.send-send-stub-fig .cur { font-size: 20px; color: var(--muted); letter-spacing: 0; }
+.send-send-stub-fig.void { color: var(--faint); text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: color-mix(in srgb, var(--bad) 60%, transparent); }
+.send-receipt.fail .send-send-stub-amount .pb-words { color: var(--faint); }
+
+.send-send-stub-dl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 24px; margin: 0; }
+.send-send-stub-dl .pb-field.wide { grid-column: 1 / -1; }
+.send-send-stub-dl dt { font: 600 10.5px/1.2 var(--font); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.send-send-stub-dl dd { margin: 0; font-weight: 600; font-size: 15.5px; color: var(--ink); overflow-wrap: anywhere; }
+.send-send-stub-dl dd.mono { font-size: 13.5px; letter-spacing: .02em; }
+.send-send-stub-dl dd .mono { font-size: 13px; font-weight: 400; }
+.send-send-stub-bal { border-bottom: 0 !important; }
+.send-send-stub-bal dd { font-family: var(--display); font-size: 22px; font-weight: 560; }
+.send-send-stub-micr { font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding-top: 10px; border-top: 1px dashed var(--rule-2); overflow-wrap: anywhere; }
+.send-receipt-actions { display: flex; gap: 8px; width: min(100%, 580px); }
+
+/* ------------------------------------------------ passkey approval */
+.send-scrim {
+  position: fixed; inset: 0; z-index: 60; padding: 16px; overflow-y: auto;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--night) 55%, transparent);
+  animation: send-fade .15s ease-out;
+}
+.send-pk {
+  width: min(460px, 100%); background: var(--surface); color: var(--ink);
+  border: 1px solid var(--rule-2); border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
+  padding: 18px 22px 22px;
+}
+.send-pk-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 10px; border-bottom: 2px solid var(--ink); }
+.send-pk-ref { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.send-pk-body { display: grid; gap: 14px; padding-top: 16px; }
+.send-pk-title-row { display: flex; align-items: center; gap: 14px; }
+.send-pk-seal {
+  flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
+  color: var(--warn); background: var(--warn-soft); border: 1.5px solid currentColor;
+  box-shadow: inset 0 0 0 3px var(--warn-soft), inset 0 0 0 4px currentColor;
+}
+.send-pk-title { font-family: var(--display); font-weight: 540; font-size: 23px; letter-spacing: -0.01em; margin: 0; }
+.send-pk-lede { color: var(--ink-2); font-size: 15px; }
+.send-pk-lede b { color: var(--ink); }
+.send-pk-cheque { background: var(--send-chq-paper, var(--surface-2)); border: 1px solid var(--rule-2); border-radius: var(--r-sm); padding: 2px 14px 4px; }
+.send-pk-line { display: grid; grid-template-columns: 60px minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+.send-pk-line:last-child { border-bottom: 0; }
+.send-pk-line b { font-weight: 600; overflow-wrap: anywhere; }
+.send-pk-line.fig b { font-family: var(--display); font-size: 22px; font-weight: 560; letter-spacing: -0.015em; }
+.send-pk-why { display: grid; gap: 2px; padding-left: 12px; border-left: 2px solid var(--warn); }
+.send-pk-why .pb-label { color: var(--warn); }
+.send-pk-why p { font-size: 14px; color: var(--ink-2); }
+.send-pk-actions { display: grid; gap: 6px; }
+
+@keyframes send-fade { from { opacity: 0 } }
+@keyframes send-tear { from { transform: translateY(-10px); opacity: 0 } }
+@media (prefers-reduced-motion: reduce) {
+  .send-stub, .send-scrim { animation: none; }
+  .send-person { transition: none; }
+}
+
+/* ------------------------------------------------ phone */
+@media (max-width: 680px) {
+  .send { gap: 16px; }
+  .send-steps li { flex-direction: column; gap: 2px; padding: 8px 2px; text-align: center; }
+  .send-step-l { font-size: 9.5px; letter-spacing: .1em; max-width: 100%; }
+  .send-h { font-size: 22px; }
+  .send-back { order: -1; padding-left: 0; }
+
+  .send-chq { padding: 16px 16px 0; gap: 12px; }
+  .send-chq-cross { margin-left: 0; }
+  .send-chq-mid, .send-chq-foot { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .send-chq-fig { order: -1; }
+  .send-chq-line { grid-template-columns: 58px minmax(0, 1fr); min-height: 44px; }
+  .send-chq-input, .send-at { font-size: 18px; }
+  .send-chq-payee-text b { font-size: 19px; }
+  .send-chq-box input, .send-chq-box-num { font-size: 28px; }
+  .send-chq-micr { margin: 4px -16px 0; padding: 10px 16px 11px; gap: 4px 16px; font-size: 11.5px; letter-spacing: .08em; }
+  .send-pin-help { text-align: left; }
+
+  .send-send-stub-paper { padding-left: 18px; padding-right: 18px; }
+  .send-send-stub-head { flex-direction: column-reverse; gap: 10px; }
+  .send-send-stub-stamp { align-self: flex-end; }
+  .send-send-stub-dl { grid-template-columns: minmax(0, 1fr); }
+  .send-receipt-actions { flex-direction: column-reverse; }
+  .send-pk { padding: 16px; }
+}
+@media (max-width: 400px) {
+  .send-chq-date-g > span { width: 16px; height: 22px; font-size: 12px; }
+  .send-chq-date-boxes { gap: 4px; }
+  .send-find .btn { padding-left: 10px; padding-right: 10px; }
+}

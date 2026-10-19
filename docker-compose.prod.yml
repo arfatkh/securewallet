@@ -1,0 +1,40 @@
+# Public deployment: Caddy terminates HTTPS on 80/443 in front of the normal stack.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# .env must set DOMAIN (e.g. securewallet.uaenorth.cloudapp.azure.com) and the three
+# database passwords; deploy/setup.sh writes it for you. See DEPLOY.md.
+services:
+  api:
+    environment:
+      RP_ID: ${DOMAIN:?set DOMAIN in .env}              # passkeys are bound to the public name
+      EXPECTED_ORIGINS: https://${DOMAIN}
+      COOKIE_SECURE: "true"                             # refresh cookie only over HTTPS
+
+  web:
+    ports: !reset []                                    # not published: only Caddy can reach it
+    volumes:
+      - ./deploy/real_ip.conf:/etc/nginx/extra/real_ip.conf:ro
+
+  caddy:
+    image: caddy:2.8-alpine
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data                                # certificates survive restarts
+      - caddy_config:/config
+    depends_on: [web]
+    networks: [edge]
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,59 @@
+/* Wallet details as a passbook account page, matching Home's account section:
+   printed form on the left page, ruled balance page on the right, centre fold between. */
+.wd { display: grid; gap: 20px; max-width: 980px; }
+.wd-back { justify-self: start; }
+.wd-loading { font-size: 15px; }
+
+.wd-account {
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  background: var(--surface); border: 1px solid var(--rule-2); border-radius: var(--r-lg);
+  box-shadow: var(--shadow); overflow: hidden; position: relative;
+}
+.wd-account.foreign { border-color: color-mix(in srgb, var(--bad) 45%, var(--rule-2)); border-top: 4px solid var(--bad); }
+/* the passbook's centre fold */
+.wd-account::after {
+  content: ""; position: absolute; top: 14px; bottom: 14px; left: 51.2%; width: 1px;
+  background: repeating-linear-gradient(to bottom, var(--rule-2) 0 6px, transparent 6px 11px);
+}
+
+.wd-form { display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; align-content: start; padding: 24px 30px 28px; }
+.wd-wide { grid-column: 1 / -1; }
+.wd-holder { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: end; }
+.wd-holder .pb-field b { font-family: var(--display); font-weight: 520; font-size: 26px; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.wd-holder .avatar { margin-bottom: 10px; }
+.wd-form .pb-field b.mono { font-size: 14px; letter-spacing: .02em; }
+.wd-id { user-select: all; overflow-wrap: anywhere; font-size: 13px !important; }
+.wd-status { text-transform: capitalize; }
+
+.wd-closing { display: grid; align-content: start; gap: 10px; padding: 24px 30px 26px 40px; }
+.wd-figure { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; font-variant-numeric: tabular-nums lining-nums; }
+.wd-figure .cur { font-family: var(--display); font-size: 22px; color: var(--muted); }
+.wd-figure .whole { font-family: var(--display); font-size: clamp(40px, 6vw, 60px); font-weight: 560; letter-spacing: -0.035em; line-height: 1; color: var(--ink); overflow-wrap: anywhere; }
+.wd-figure .frac { font-family: var(--display); font-size: 22px; color: var(--muted); }
+.wd-account.foreign .wd-figure .whole { color: var(--bad); }
+.wd-words { margin: 0; max-width: 34ch; }
+.wd-closing .pb-stamp { margin: 8px 0 4px; }
+.wd-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+
+/* not found */
+.wd-missing { display: grid; gap: 8px; position: relative; border-top: 4px solid var(--bad); padding: 24px 28px; }
+.wd-missing > .pb-label { color: var(--bad); }
+.wd-missing h2 { font-family: var(--display); font-size: 28px; font-weight: 540; color: var(--ink); padding-bottom: 8px; border-bottom: 2px solid var(--ink); }
+.wd-missing .muted { font-size: 15.5px; }
+.wd-code {
+  margin-top: 4px; padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--rule);
+  border-radius: var(--r-sm); font-size: 13.5px; color: var(--ink-2); overflow-wrap: anywhere;
+}
+.wd-missing-stamp { margin-top: 6px; }
+
+@media (max-width: 760px) {
+  .wd-account { grid-template-columns: minmax(0, 1fr); }
+  .wd-account::after { display: none; }
+  .wd-form { padding: 18px 18px 6px; }
+  .wd-closing { padding: 18px; border-top: 1px dashed var(--rule-2); }
+  .wd-missing { padding: 20px 16px; }
+}
+@media (max-width: 440px) {
+  .wd-form { grid-template-columns: minmax(0, 1fr); }
+  .wd-holder .pb-field b { font-size: 22px; }
+}

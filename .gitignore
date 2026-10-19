@@ -1,0 +1,15 @@
+.env
+node_modules/
+dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# local secrets and build output
+*.env
+!.env.example
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.synctex.gz

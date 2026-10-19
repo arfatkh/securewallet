@@ -1,0 +1,23 @@
+# Runs the whole end-to-end test suite inside Docker, against the running stack.
+# Nothing to install on the host except Docker. From the A1 folder:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm tests
+#
+# Needs the stack up with DEMO_MODE=true (the tests use the Security Lab switches).
+# Note: the tests reset the demo data, so sign in again afterwards.
+services:
+  tests:
+    image: python:3.12-slim
+    profiles: ["test"]
+    working_dir: /src
+    volumes:
+      - ./backend:/src:ro
+    environment:
+      API_URL: http://api:8000
+      KEYS_DIR: /tmp/testkeys
+      PYTHONDONTWRITEBYTECODE: "1"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PIP_ROOT_USER_ACTION: ignore
+    command: sh -c "pip install -q -r requirements.txt pytest httpx && python -m pytest tests -v -p no:cacheprovider"
+    depends_on: [api]
+    networks: [edge]

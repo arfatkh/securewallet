@@ -1,0 +1,61 @@
+name: securewallet
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      OWNER_DB_PASSWORD: ${OWNER_DB_PASSWORD:?set OWNER_DB_PASSWORD in .env}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    networks: [internal]          # no published port: only the API can reach the database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d securewallet"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build: ./backend
+    environment:
+      APP_DATABASE_URL: postgresql://wallet_app:${APP_DB_PASSWORD}@db:5432/securewallet
+      OWNER_DATABASE_URL: postgresql://wallet_owner:${OWNER_DB_PASSWORD}@db:5432/securewallet
+      KEYS_DIR: /keys
+      DEMO_MODE: ${DEMO_MODE:-false}
+      SESSION_IDLE_SECONDS: ${SESSION_IDLE_SECONDS:-300}
+      RP_ID: localhost
+      EXPECTED_ORIGINS: http://localhost:8080
+    volumes:
+      - keys:/keys
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [internal, edge]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    ports:
+      - "8080:8080"
+    depends_on: [api]
+    networks: [edge]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+
+networks:
+  internal:
+    internal: true                # no route to the internet from the data tier
+  edge: {}
+
+volumes:
+  dbdata:
+  keys:

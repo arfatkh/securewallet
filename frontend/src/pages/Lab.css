@@ -1,0 +1,110 @@
+/* Security lab: one card per weakness, each with its control switches and attack. */
+.lab { max-width: 1180px; }
+
+/* ---------------------------------------------------------------- head */
+.lab-head {
+  display: flex; gap: 24px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap;
+  padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--rule);
+}
+.lab-intro { display: grid; gap: 8px; max-width: 640px; }
+.lab-intro .eyebrow { margin: 0; }
+.lab-lede { margin: 0; font-size: 15px; line-height: 1.6; color: var(--ink-2); }
+
+.lab-posture-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+.lab-posture { display: flex; gap: 4px; }
+.lab-posture i { width: 20px; height: 8px; border-radius: 2px; background: var(--ok); }
+.lab-posture i.off { background: var(--bad); }
+.lab-posture-text { font-size: 14px; font-weight: 600; color: var(--ok); }
+.lab-posture-row.has-off .lab-posture-text { color: var(--bad); }
+
+.lab-reset { flex: none; }
+.lab-confirm { align-items: center; flex-wrap: wrap; max-width: 520px; }
+.lab-confirm-actions { display: inline-flex; gap: 8px; margin-left: auto; }
+.lab-error { margin-bottom: 16px; }
+
+/* ---------------------------------------------------------------- grid + card */
+.lab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+
+.lab-card {
+  display: flex; flex-direction: column; gap: 16px; padding: 24px;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: var(--r-lg);
+  box-shadow: var(--shadow); border-top: 4px solid var(--ok);
+}
+.lab-card.off { border-color: var(--bad); border-top-color: var(--bad); background: var(--surface); }
+
+.lab-card-top { display: flex; gap: 12px; align-items: flex-start; }
+.lab-wid {
+  flex: none; font-family: var(--mono); font-size: 13px; font-weight: 600; line-height: 1;
+  padding: 6px 8px; border-radius: var(--r-sm); background: var(--night); color: var(--surface);
+}
+.lab-card.off .lab-wid { background: var(--bad); }
+.lab-card-title { flex: 1; min-width: 0; }
+.lab-card h3 { margin: 0; font-family: var(--display); font-weight: 600; font-size: 19px; line-height: 1.25; color: var(--ink); }
+.lab-desc { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+.lab-exposed {
+  flex: none; display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px;
+  border-radius: 999px; background: var(--bad-soft); color: var(--bad);
+  font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------------- control switch cards */
+.lab-controls { display: grid; gap: 8px; }
+.lab-ctl {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 12px; align-items: center;
+  padding: 12px; border-radius: var(--r); cursor: pointer;
+  background: var(--ok-soft); border: 1px solid var(--ok-soft);
+}
+.lab-ctl-icon {
+  display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface); color: var(--ok);
+}
+.lab-ctl-text { display: grid; gap: 2px; font-size: 14px; line-height: 1.4; }
+.lab-ctl-text b { font-weight: 600; color: var(--ink); }
+.lab-ctl-desc { font-size: 13px; color: var(--ink-2); }
+.lab-ctl-state {
+  font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ok);
+}
+.lab-ctl .switch { margin-left: 0; }
+
+.lab-ctl.is-off {
+  background: var(--bad-soft); border: 1px dashed var(--bad);
+}
+.lab-ctl.is-off .lab-ctl-icon { color: var(--bad); }
+.lab-ctl.is-off .lab-ctl-state { color: var(--bad); }
+.lab-ctl:has(.switch:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------------------------------------------------------------- attack + results */
+.lab-attack {
+  font-size: 14px; line-height: 1.55; color: var(--ink-2);
+  padding: 12px 16px; border-radius: var(--r); background: var(--surface-2); border-left: 3px solid var(--rule-2);
+}
+.lab-attack-label {
+  font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); margin-right: 4px;
+}
+.lab-attack-url { margin-top: 8px; }
+.lab-attack-url a { font-family: var(--mono); font-size: 12.5px; word-break: break-all; color: var(--accent); }
+
+.lab-runs { display: grid; gap: 8px; }
+.lab-run {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start;
+  padding: 8px 12px; border-radius: var(--r-sm); font-size: 14px; line-height: 1.45;
+}
+.lab-run b { font-weight: 700; }
+.lab-run.succeeded { background: var(--bad-soft); color: var(--bad); }
+.lab-run.blocked { background: var(--ok-soft); color: var(--ok); }
+.lab-run-tag {
+  font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px; background: var(--surface); color: var(--ink-2); white-space: nowrap;
+}
+
+.lab-foot { margin-top: auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding-top: 16px; border-top: 1px solid var(--rule); }
+.lab-expect { font-size: 13px; color: var(--muted); }
+.lab-card.off .lab-expect { color: var(--bad); font-weight: 600; }
+
+@media (max-width: 760px) {
+  .lab-head { padding-bottom: 16px; margin-bottom: 16px; }
+  .lab-grid { grid-template-columns: minmax(0, 1fr); }
+  .lab-card { padding: 16px; }
+  .lab-ctl { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .lab-ctl-icon { display: none; }
+}

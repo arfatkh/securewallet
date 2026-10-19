@@ -1,0 +1,128 @@
+/* Audit as the auditor's register: a ruled reconciliation sheet with a rubber stamp
+   for the verdict, and the append-only trail as a ledger register with outcome stamps. */
+.audit { display: grid; gap: 22px; max-width: var(--maxw); }
+.audit-lede { font-size: 14.5px; color: var(--ink-2); max-width: 62ch; }
+.audit .pb-sheet-head .btn { align-self: center; }
+
+/* ---------------------------------------------------------------- reconciliation sheet */
+.audit-recon { display: grid; gap: 16px; }
+.audit-verify {
+  display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 0;
+  border: 1px solid var(--rule-2); border-radius: var(--r-sm); overflow: hidden;
+}
+/* rows are exactly one ruled line tall so the figures sit on the paper's lines */
+.audit-sum { margin: 0; padding: 0 18px; display: grid; align-content: start; }
+.audit-sum > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; height: 32px; line-height: 32px; font-size: 14.5px; }
+.audit-sum dt { color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.audit-sum dt small { color: var(--muted); font-size: 11.5px; margin-left: 4px; }
+.audit-sum dd { margin: 0; font-family: var(--display); font-size: 16px; font-weight: 560; white-space: nowrap; }
+.audit-sum .total { height: 40px; line-height: 40px; box-shadow: inset 0 1px 0 var(--ink-2), inset 0 4px 0 -2px var(--surface), inset 0 4px 0 -1px var(--ink-2); background: var(--surface); }
+.audit-sum .total dt { font-weight: 600; color: var(--ink); }
+.audit-sum .total dd { font-size: 19px; }
+.audit-blank { color: var(--faint); }
+
+.audit-verdict {
+  display: grid; justify-items: center; align-content: center; gap: 12px; padding: 16px 12px;
+  border-left: 1px dashed var(--rule-2); background: var(--surface); min-height: 136px;
+}
+.audit-verdict .pb-stamp { justify-self: center; margin: 4px 0; }
+.audit-verdict .pb-stamp b { font-size: 17px; }
+.audit-pending { font: 600 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--faint);
+  border: 1.5px dashed var(--rule-2); border-radius: 4px; padding: 8px 12px; }
+.audit-recon.is-running .audit-pending { color: var(--accent); border-color: currentColor; animation: audit-pulse 1.2s ease-in-out infinite; }
+@keyframes audit-pulse { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .audit-recon.is-running .audit-pending { animation: none; } }
+
+/* ---------------------------------------------------------------- register toolbar */
+.audit-toolbar { flex-wrap: wrap; align-items: flex-end; }
+.audit-toolbar-title { display: grid; gap: 2px; margin-right: auto; }
+.audit-filters { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.audit-select { height: 36px; width: auto; min-width: 140px; font-size: 14px; }
+
+/* ---------------------------------------------------------------- register tables */
+.audit-scroll { overflow: auto; max-height: min(70vh, 760px); margin: 0 -20px; }
+.audit-scroll-short { max-height: 420px; margin: 0; border: 1px solid var(--rule-2); border-radius: var(--r-sm); }
+
+/* undo the Home ledger's fixed margin rule and row click affordance; the register draws its own */
+.audit .pb-table { min-width: 0; background: none; border-collapse: separate; border-spacing: 0; color: var(--ink); }
+.audit .pb-table th {
+  position: sticky; top: 0; z-index: 1; background: var(--surface);
+  padding: 8px 12px 9px; border-bottom: 1px solid var(--ink-2);
+}
+.audit .pb-table td { padding: 10px 12px 9px; line-height: 1.45; background: var(--surface); }
+.audit .pb-table tbody tr { cursor: default; }
+.audit .pb-table tbody tr:hover td { background: var(--paper); }
+.audit .pb-table th:first-child, .audit .pb-table td:first-child { padding-left: 20px; }
+.audit .pb-table th:last-child, .audit .pb-table td:last-child { padding-right: 20px; }
+.audit-scroll-short .pb-table th:first-child, .audit-scroll-short .pb-table td:first-child { padding-left: 14px; }
+.audit-scroll-short .pb-table th:last-child, .audit-scroll-short .pb-table td:last-child { padding-right: 14px; }
+.audit .pb-table tbody tr:last-child td { border-bottom: 0; }
+/* red margin rule after the entry number, as in a bound register */
+.audit-log td:first-child, .audit-log th:first-child { border-right: 1px solid color-mix(in srgb, var(--bad) 45%, transparent); }
+
+.audit-code { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); overflow-wrap: anywhere; }
+.audit-id { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.audit-time { white-space: nowrap; font-size: 12.5px; color: var(--ink-2); }
+.audit-who { white-space: nowrap; font-weight: 600; }
+.audit-who .mono { font-size: 13px; }
+.audit-http { font-size: 13px; color: var(--ink-2); }
+.audit-detail { min-width: 220px; max-width: 420px; }
+.audit-ip { white-space: nowrap; }
+.audit-money { font-family: var(--display); white-space: nowrap; }
+.audit-outcome .pb-flag, .audit-status .pb-flag { margin-top: 1px; }
+.audit .pb-flag.neutral { color: var(--muted); }
+
+/* failed / denied entries carry a thin margin tick so they scan quickly */
+.audit-log tr.o-bad td:first-child { box-shadow: inset 3px 0 0 var(--bad); }
+.audit-log tr.o-warn td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
+.audit-recon-table tr.is-bad td { background: var(--bad-soft); }
+.audit .audit-empty td { padding: 24px; text-align: center; }
+
+.audit-foot {
+  display: flex; gap: 8px; align-items: flex-start; margin: 0 -20px -20px;
+  padding: 12px 20px; border-top: 2px solid var(--ink); border-radius: 0 0 var(--r-lg) var(--r-lg);
+  font-family: var(--display); font-style: italic; font-size: 14px; color: var(--ink-2);
+}
+.audit-foot svg { flex: none; margin-top: 3px; color: var(--muted); }
+
+/* ---------------------------------------------------------------- phone: entries become slips */
+@media (max-width: 760px) {
+  .audit { gap: 16px; }
+  .audit-recon > .pb-sheet-head { flex-wrap: wrap; }
+  .audit-verify { grid-template-columns: minmax(0, 1fr); }
+  .audit-sum { padding: 0 12px; }
+  .audit-sum dt small { display: none; }
+  .audit-verdict { border-left: 0; border-top: 1px dashed var(--rule-2); min-height: 0; grid-auto-flow: column; justify-content: space-between; align-items: center; padding: 14px 16px; }
+  .audit-filters { width: 100%; }
+  .audit-select { flex: 1; min-width: 0; }
+  .audit-foot { margin: 0 -16px -16px; padding: 12px 16px; }
+
+  .audit-scroll { max-height: none; overflow: visible; margin: 0; }
+  .audit-scroll-short { border: 0; border-radius: 0; }
+  .audit .pb-table, .audit .pb-table tbody, .audit .pb-table tr, .audit .pb-table td { display: block; }
+  .audit .pb-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .audit .pb-table tbody { display: grid; gap: 8px; padding: 4px 0 12px; }
+  .audit .pb-table tr {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 12px;
+    padding: 12px 14px; border: 1px solid var(--rule-2); border-radius: var(--r-sm); background: var(--surface);
+  }
+  .audit .pb-table tbody tr:hover td { background: transparent; }
+  .audit .pb-table td,
+  .audit .pb-table td:first-child, .audit .pb-table td:last-child,
+  .audit-scroll-short .pb-table td:first-child, .audit-scroll-short .pb-table td:last-child {
+    padding: 0; border: 0; background: transparent; text-align: left; min-width: 0; max-width: none; white-space: normal; box-shadow: none;
+  }
+  .audit .pb-table td::before {
+    content: attr(data-label); display: block; margin-bottom: 2px;
+    font: 600 10.5px/1.3 var(--font); letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+  }
+  .audit .pb-table td.audit-detail, .audit .pb-table td.audit-ip { grid-column: 1 / -1; }
+  .audit .pb-table td.audit-detail:has(code:empty) { display: none; }
+  .audit-log tr.o-bad { border-left: 3px solid var(--bad); }
+  .audit-log tr.o-warn { border-left: 3px solid var(--warn); }
+  .audit-recon-table tr.is-bad { background: var(--bad-soft); border-color: var(--bad); }
+  .audit-recon-table tr.is-bad td { background: transparent; }
+  .audit .pb-table tr.audit-empty { display: block; }
+  .audit .pb-table tr.audit-empty td::before { content: none; }
+  .audit .pb-table tr.audit-empty td { text-align: center; padding: 16px 0; }
+}
