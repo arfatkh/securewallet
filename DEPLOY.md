@@ -1,4 +1,45 @@
-# Deploying SecureWallet publicly (Azure VM)
+# Deploying SecureWallet publicly
+
+## Option A: Dokploy (recommended)
+
+Dokploy pulls this repository from GitHub and runs `docker-compose.dokploy.yml`. Its Traefik proxy provides the domain and the HTTPS certificate.
+
+```
+Internet ──HTTPS──▶ Traefik (Dokploy) ──▶ web (nginx: CSP, rate limits) ──▶ api ──▶ db
+                                          dokploy-network + edge             internal network only
+```
+
+1. **Project:** in Dokploy, **Projects → Create Project** `securewallet` → **Create Service → Compose**.
+2. **General → Provider:** GitHub (or Git). Choose repository `israr13/securewallet`, branch `main`, compose path **`./docker-compose.dokploy.yml`**.
+3. **Environment tab:** paste the following and **Save**.
+   - The passwords are long random strings. Generate each with `openssl rand -hex 24`.
+   - `DOMAIN` must be exactly the domain you add in step 4.
+   ```
+   POSTGRES_PASSWORD=<random>
+   OWNER_DB_PASSWORD=<random>
+   APP_DB_PASSWORD=<random>
+   DOMAIN=wallet.example.com
+   DEMO_MODE=true
+   SESSION_IDLE_SECONDS=300
+   ```
+4. **Domains tab → Add Domain:**
+   - Host: the same domain. It must have **HTTPS**, because the refresh cookie is Secure-only and passkeys need it. Use a domain or subdomain with an **A record pointing at the Dokploy server's IP**. A free DuckDNS subdomain works. Don't use the generated `*.traefik.me` hosts: those usually run on plain HTTP, and sign-in won't stay working.
+   - Service: **web**. Container port: **8080**. Path: `/`.
+   - **HTTPS on**, certificate **Let's Encrypt**.
+5. **Deploy.** The first build takes 3–8 minutes. Then open `https://<domain>` and sign in as `ali` / `Wallet@2026!`.
+
+**Updating:** push to `main`, then click **Deploy** again, or turn on **Auto Deploy**. Data in the `dbdata` and `keys` volumes is kept.
+
+**Notes:**
+- **Never change the passwords after the first deploy.** The database stores them when it's first created; to change them, delete the volumes too.
+- **Changing the domain:** update `DOMAIN` as well, then redeploy. Passkeys are tied to the domain, so existing ones stop working on the new name.
+- **Tests:** in Dokploy's terminal for the server, from the compose folder:
+  ```
+  docker compose -f docker-compose.dokploy.yml -f docker-compose.test.yml run --rm tests
+  ```
+- **Database console:** **Docker** tab → `securewallet-db` → Terminal → `psql -U postgres -d securewallet`.
+
+## Option B: a plain VM with Caddy
 
 The app runs as the same Docker stack as on a laptop, with **Caddy** in front on ports 80/443. Caddy gets a free Let's Encrypt certificate and serves everything over HTTPS.
 
@@ -18,7 +59,7 @@ What changes in production (`docker-compose.prod.yml`):
 | nginx takes the client IP from Caddy (`deploy/real_ip.conf`) | Per-IP login limits and the audit log see each visitor's real IP, not Caddy's |
 | Random 32-character DB passwords, generated on the server | Secrets never touch GitHub |
 
-## 1. Push the code to GitHub (on the laptop)
+### 1. Push the code to GitHub (on the laptop)
 
 Create an **empty private** repository on github.com (no README), then in the `A1` folder:
 
@@ -29,7 +70,7 @@ git push -u origin main
 
 `.env` is in `.gitignore` and is never pushed. Keep the repo private, so classmates can't copy the assignment.
 
-## 2. Create the VM (Azure portal, Azure for Students)
+### 2. Create the VM (Azure portal, Azure for Students)
 
 1. Go to **portal.azure.com** → *Virtual machines* → *Create*.
    - Image: **Ubuntu Server 24.04 LTS**.
@@ -39,7 +80,7 @@ git push -u origin main
 2. After it's created, open the VM → **Overview → DNS name → Not configured**. Set a DNS name label such as `securewallet-fast`. Your domain becomes `securewallet-fast.<region>.cloudapp.azure.com`.
 3. Recommended: under *Networking*, change the SSH (22) rule's source to **My IP**.
 
-## 3. Install and start (on the VM)
+### 3. Install and start (on the VM)
 
 ```bash
 ssh -i securewallet_key.pem azureuser@<your-domain>
@@ -50,7 +91,7 @@ bash deploy/setup.sh <your-domain>
 
 The first build takes 5–10 minutes. Then open `https://<your-domain>` and sign in as `ali` / `Wallet@2026!`.
 
-## Updating after a change
+### Updating after a change
 
 On the laptop, commit and push. Then on the VM:
 
@@ -58,7 +99,7 @@ On the laptop, commit and push. Then on the VM:
 cd securewallet && bash deploy/update.sh
 ```
 
-## Running the tests on the server
+### Running the tests on the server
 
 ```bash
 sudo docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm tests

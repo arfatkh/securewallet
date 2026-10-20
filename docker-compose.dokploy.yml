@@ -1,0 +1,74 @@
+# Dokploy deployment (Dokploy → Create Service → Compose → this file). Self-contained:
+# Dokploy runs a single compose file, and its Traefik proxy provides the domain and HTTPS,
+# so there is no Caddy and no published port here.
+#
+# Set these in Dokploy's Environment tab (they are written to .env next to this file):
+#   POSTGRES_PASSWORD, OWNER_DB_PASSWORD, APP_DB_PASSWORD   (long random strings)
+#   DOMAIN=wallet.example.com   DEMO_MODE=true
+# Then in Domains: service "web", port 8080, HTTPS on, certificate Let's Encrypt.
+name: securewallet
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      OWNER_DB_PASSWORD: ${OWNER_DB_PASSWORD:?set OWNER_DB_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    networks: [internal]          # only the API can reach the database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d securewallet"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build: ./backend
+    environment:
+      APP_DATABASE_URL: postgresql://wallet_app:${APP_DB_PASSWORD}@db:5432/securewallet
+      OWNER_DATABASE_URL: postgresql://wallet_owner:${OWNER_DB_PASSWORD}@db:5432/securewallet
+      KEYS_DIR: /keys
+      DEMO_MODE: ${DEMO_MODE:-false}
+      SESSION_IDLE_SECONDS: ${SESSION_IDLE_SECONDS:-300}
+      RP_ID: ${DOMAIN:?set DOMAIN}                # passkeys are bound to the public name
+      EXPECTED_ORIGINS: https://${DOMAIN}
+      COOKIE_SECURE: "true"                       # Traefik serves HTTPS only
+    volumes:
+      - keys:/keys
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [internal, edge]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    volumes:
+      - ./deploy/real_ip.conf:/etc/nginx/extra/real_ip.conf:ro   # real client IP from Traefik
+    depends_on: [api]
+    networks: [edge, dokploy-network]
+    labels:
+      - traefik.docker.network=dokploy-network   # web is on two networks; route via Dokploy's
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+
+networks:
+  internal:
+    internal: true                # no route to the internet from the data tier
+  edge: {}
+  dokploy-network:
+    external: true                # Traefik's network, created by Dokploy
+
+volumes:
+  dbdata:
+  keys:
