@@ -42,7 +42,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    networks: [internal, edge]
+    networks:
+      internal: {}
+      edge:
+        aliases: [securewallet-api]   # unique name nginx proxies to (see frontend/proxy_api.conf)
     read_only: true
     tmpfs: [/tmp]
     security_opt: ["no-new-privileges:true"]
